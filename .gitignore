@@ -1,0 +1,15 @@
+# Chezmoi
+.chezmoi*.yaml
+
+# macOS
+.DS_Store
+
+# Secrets - never commit these
+*secret*
+*private*
+*.pem
+*.key
+
+# Backup files
+*.bak
+*~
