@@ -52,6 +52,34 @@ cd -
 chezmoi apply
 ```
 
+## Shell Tools
+
+### Powerlevel10k
+```bash
+p10k configure      # Customize prompt appearance
+```
+
+### zoxide (smarter cd)
+```bash
+z <partial-path>    # Jump to frequently used directory
+zi                  # Interactive directory picker
+```
+
+### atuin (enhanced history)
+```bash
+atuin search        # Search command history
+atuin stats         # View history statistics
+atuin login         # Sync history across machines (optional)
+```
+
+### mise (runtime manager)
+```bash
+mise install        # Install runtimes from config
+mise use node@20    # Use specific version in current dir
+mise ls             # List installed runtimes
+mise doctor         # Check for issues
+```
+
 ## Homebrew Management
 
 ### Update all packages
@@ -92,11 +120,34 @@ chezmoi managed
 chezmoi forget ~/.someconfig
 ```
 
+### Re-run external dependency downloads
+```bash
+chezmoi apply --refresh-externals
+```
+
 ## Setup New Mac
 
-Just run:
 ```bash
+# 1. Install Homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Install chezmoi and dotfiles
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply kooldewil
+
+# 3. Install Homebrew packages
+brew bundle --file=~/.local/share/chezmoi/Brewfile
+
+# 4. Create chezmoi config (if prompted for template vars)
+# Edit ~/.config/chezmoi/chezmoi.toml with your settings
+
+# 5. Apply dotfiles
+chezmoi apply
+
+# 6. Configure Powerlevel10k
+p10k configure
+
+# 7. Install runtimes
+mise install
 ```
 
 ## Troubleshooting
@@ -114,4 +165,15 @@ chezmoi apply --dry-run --verbose
 ### Re-initialize from GitHub
 ```bash
 chezmoi init --apply kooldewil
+```
+
+### Template variable errors
+If you see errors about missing template variables, ensure your config exists:
+```bash
+cat ~/.config/chezmoi/chezmoi.toml
+```
+
+### Refresh external dependencies
+```bash
+chezmoi apply --refresh-externals
 ```

@@ -1,6 +1,6 @@
 [user]
-	name = kooldewil
-	email = shaunakt@gmail.com
+	name = {{ .name }}
+	email = {{ .email }}
 
 [core]
 	editor = nano
@@ -39,30 +39,30 @@
 [alias]
 	# Short status
 	s = status -sb
-	
+
 	# Add all
 	aa = add --all
-	
+
 	# Commit
 	c = commit
 	cm = commit -m
-	
+
 	# Pretty log
 	l = log --pretty=format:'%C(yellow)%h%C(reset) - %C(cyan)%an%C(reset), %C(green)%ar%C(reset) : %s'
 	lg = log --graph --pretty=format:'%C(yellow)%h%C(reset) - %C(cyan)%an%C(reset), %C(green)%ar%C(reset) : %s' --abbrev-commit
-	
+
 	# Show branches
 	branches = branch -a
-	
+
 	# Undo last commit
 	undo = reset HEAD~1 --mixed
-	
+
 	# Amend last commit
 	amend = commit --amend --no-edit
-	
+
 	# Show diff of last commit
 	last = diff HEAD^
-	
+
 	# Stash
 	stash-all = stash save --include-untracked
 

@@ -1,0 +1,19 @@
+# Custom Paths
+# Tool-specific paths
+
+{{- if .dev_computer }}
+# Cargo (Rust)
+if [[ -d "$HOME/.cargo/bin" ]]; then
+  path_append "$HOME/.cargo/bin"
+fi
+
+# Go
+if [[ -d "$HOME/go/bin" ]]; then
+  path_append "$HOME/go/bin"
+fi
+
+# mise shims (if using shim mode)
+if [[ -d "${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims" ]]; then
+  path_append "${XDG_DATA_HOME:-$HOME/.local/share}/mise/shims"
+fi
+{{- end }}

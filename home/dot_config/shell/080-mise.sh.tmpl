@@ -1,0 +1,14 @@
+{{- if .dev_computer }}
+# mise - Runtime version manager
+# Manages node, python, go, and other language runtimes
+
+if command -v mise &> /dev/null; then
+  eval "$(mise activate zsh)"
+
+  # Useful aliases
+  alias mi='mise install'
+  alias mu='mise use'
+  alias ml='mise list'
+  alias mls='mise ls-remote'
+fi
+{{- end }}

@@ -1,0 +1,17 @@
+# Atuin Configuration
+# https://atuin.sh/docs/config
+
+# Style: auto, full, compact
+style = "compact"
+
+# Search mode: prefix, fulltext, fuzzy, skim
+search_mode = "fuzzy"
+
+# Filter mode: global, host, session, directory
+filter_mode = "global"
+
+# Show command preview
+show_preview = true
+
+# Filter mode for shell up key binding
+filter_mode_shell_up_key_binding = "session"

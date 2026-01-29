@@ -1,0 +1,12 @@
+{{- $name := "Shaunak Tavargeri" -}}
+{{- $email := "shaunakt@gmail.com" -}}
+{{- $ephemeral := false -}}
+{{- $personal := true -}}
+{{- $dev_computer := true -}}
+
+[data]
+  name = {{ $name | quote }}
+  email = {{ $email | quote }}
+  ephemeral = {{ $ephemeral }}
+  personal = {{ $personal }}
+  dev_computer = {{ $dev_computer }}

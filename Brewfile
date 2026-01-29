@@ -1,10 +1,5 @@
-# Brewfile for Aki's Mac Setup
+# Brewfile for Shaunak's Mac Setup
 # Install with: brew bundle
-
-# Taps
-tap "homebrew/bundle"
-tap "homebrew/cask"
-tap "homebrew/core"
 
 # CLI Tools
 brew "chezmoi"           # Dotfile manager
@@ -20,8 +15,17 @@ brew "bat"               # Better cat
 brew "ripgrep"           # Fast grep
 brew "fd"                # Fast find
 brew "fzf"               # Fuzzy finder
-brew "zsh-autosuggestions"
-brew "zsh-syntax-highlighting"
+
+# Shell Enhancement Tools
+brew "zoxide"            # Smarter cd command
+brew "atuin"             # Enhanced shell history
+brew "mise"              # Runtime version manager (node, python, go, etc.)
+
+# Note: zsh-autosuggestions and zsh-syntax-highlighting
+# are now managed by Zinit plugin manager
+
+# Fonts (for Powerlevel10k)
+cask "font-meslo-lg-nerd-font"
 
 # Productivity & Automation
 cask "raycast"           # Launcher and productivity

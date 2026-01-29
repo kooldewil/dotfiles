@@ -1,0 +1,12 @@
+# Priority Paths
+# XDG directories and critical paths - loaded first
+
+# Ensure XDG directories exist
+[[ -d "${XDG_CONFIG_HOME:-$HOME/.config}" ]] || mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}"
+[[ -d "${XDG_DATA_HOME:-$HOME/.local/share}" ]] || mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}"
+[[ -d "${XDG_CACHE_HOME:-$HOME/.cache}" ]] || mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"
+[[ -d "${XDG_STATE_HOME:-$HOME/.local/state}" ]] || mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}"
+
+# User local bin (highest priority)
+path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/bin"

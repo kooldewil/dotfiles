@@ -1,0 +1,12 @@
+#!/bin/bash
+# Shell Loader - Sources all modular shell configuration files
+# This file is sourced by .zshrc to load all shell modules
+
+SHELL_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/shell"
+
+# Source all .sh files in the shell config directory
+if [[ -d "$SHELL_CONFIG_DIR" ]]; then
+  for config_file in "$SHELL_CONFIG_DIR"/*.sh(N); do
+    [[ -r "$config_file" ]] && source "$config_file"
+  done
+fi

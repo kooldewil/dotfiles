@@ -1,0 +1,27 @@
+# mise Configuration
+# https://mise.jdx.dev/configuration.html
+
+# Global tool versions - install with `mise install`
+[tools]
+node = "lts"
+python = "3.12"
+# go = "latest"
+# rust = "stable"
+
+# Settings
+[settings]
+# Automatically install missing tools when entering a directory
+# auto_install = true
+
+# Experimental features
+experimental = false
+
+# Legacy version file support (.nvmrc, .python-version, etc.)
+legacy_version_file = true
+
+# Always keep the last N versions installed
+# always_keep_download = false
+
+# Plugin settings
+# [plugins]
+# node = "https://github.com/asdf-vm/asdf-nodejs.git"

@@ -1,0 +1,36 @@
+#!/bin/bash
+# Path Management - Functions for safe PATH manipulation
+
+# Add a directory to PATH if it exists and isn't already in PATH
+path_add() {
+  local position="${2:-after}"
+  if [[ -d "$1" ]] && [[ ":$PATH:" != *":$1:"* ]]; then
+    if [[ "$position" == "before" ]]; then
+      export PATH="$1:$PATH"
+    else
+      export PATH="$PATH:$1"
+    fi
+  fi
+}
+
+# Add a directory to the front of PATH (highest priority)
+path_prepend() {
+  path_add "$1" "before"
+}
+
+# Add a directory to the end of PATH (lowest priority)
+path_append() {
+  path_add "$1" "after"
+}
+
+# Load all path configuration files
+load_paths() {
+  local paths_dir="${XDG_CONFIG_HOME:-$HOME/.config}/shell/paths"
+
+  if [[ -d "$paths_dir" ]]; then
+    # Source in order: priority first, then default, then custom
+    for config_file in "$paths_dir"/*.sh(N); do
+      [[ -r "$config_file" ]] && source "$config_file"
+    done
+  fi
+}
