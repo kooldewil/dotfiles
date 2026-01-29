@@ -7,3 +7,11 @@
 # Ignore zinit compiled files and cache
 .local/share/zinit/**/*.zwc
 .local/share/zinit/**/zcompdump*
+
+# Machine-specific exclusions
+# Exclude Kanata on Mac mini (no external keyboard remapping needed)
+{{ if eq .chezmoi.hostname "Shauns-Mac-mini" }}
+.config/kanata
+.config/kanata/**
+.chezmoiscripts/darwin/run_onchange_after_300-setup-kanata.sh.tmpl
+{{ end }}

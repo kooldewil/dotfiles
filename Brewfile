@@ -15,7 +15,8 @@ brew "bat"               # Better cat
 brew "ripgrep"           # Fast grep
 brew "fd"                # Fast find
 brew "fzf"               # Fuzzy finder
-brew "kanata"            # Keyboard remapping
+# Machine-specific tools (uncomment as needed)
+# brew "kanata"          # Keyboard remapping (M1 MacBook Pro only)
 
 # Shell Enhancement Tools
 brew "zoxide"            # Smarter cd command
