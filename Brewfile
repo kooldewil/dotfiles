@@ -15,6 +15,7 @@ brew "bat"               # Better cat
 brew "ripgrep"           # Fast grep
 brew "fd"                # Fast find
 brew "fzf"               # Fuzzy finder
+brew "kanata"            # Keyboard remapping
 
 # Shell Enhancement Tools
 brew "zoxide"            # Smarter cd command
