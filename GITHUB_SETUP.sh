@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Instructions for pushing your dotfiles to GitHub
+
+echo "📋 Setting up your dotfiles repository on GitHub"
+echo ""
+echo "Follow these steps:"
+echo ""
+echo "1️⃣  Create the repository on GitHub:"
+echo "   • Go to: https://github.com/new"
+echo "   • Repository name: dotfiles"
+echo "   • Description: My personal dotfiles"
+echo "   • Make it Public (so you can use chezmoi init later)"
+echo "   • DO NOT initialize with README, .gitignore, or license"
+echo "   • Click 'Create repository'"
+echo ""
+echo "2️⃣  After creating the repository, come back here and run:"
+echo ""
+echo "   git remote add origin git@github.com:kooldewil/dotfiles.git"
+echo "   git branch -M main"
+echo "   git push -u origin main"
+echo ""
+echo "3️⃣  Your dotfiles will be live at:"
+echo "   https://github.com/kooldewil/dotfiles"
+echo ""
+echo "4️⃣  Test installation on your Mac:"
+echo "   sh -c \"\$(curl -fsLS get.chezmoi.io)\" -- init --apply kooldewil"
+echo ""
