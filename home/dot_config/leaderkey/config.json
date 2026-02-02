@@ -46,6 +46,16 @@
           "value" : "/Applications/Discord.app"
         },
         {
+          "key" : "e",
+          "type" : "application",
+          "value" : "/Applications/Evernote.app"
+        },
+        {
+          "key" : "j",
+          "type" : "application",
+          "value" : "/Applications/Day One.app"
+        },
+        {
           "key" : "m",
           "type" : "application",
           "value" : "/System/Applications/Messages.app"
