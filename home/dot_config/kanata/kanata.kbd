@@ -17,9 +17,9 @@
 
 (defcfg
   ;; macOS requires the Karabiner VirtualHIDDevice driver
-  ;; Only intercept MacBook keyboard - external keyboards (Voyager) pass through
-  macos-dev-names-include (
-    "Apple Internal Keyboard / Trackpad"
+  ;; Remap all keyboards EXCEPT Voyager (which has its own firmware remapping)
+  macos-dev-names-exclude (
+    "Voyager"
   )
 
   process-unmapped-keys yes
