@@ -39,12 +39,12 @@
 ;; ============================================================
 (defvar
   tap-time 200      ;; Max time (ms) for a tap
-  hold-time 200     ;; Min time (ms) to trigger hold
+  hold-time 250     ;; Min time (ms) to trigger hold
   chord-time 80     ;; Window (ms) for chord detection
 
   ;; Separate timing for home row mods (can be more forgiving)
   hrm-tap 200
-  hrm-hold 200
+  hrm-hold 250
 )
 
 ;; ============================================================
