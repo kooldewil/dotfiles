@@ -84,6 +84,11 @@
           "key" : "1",
           "type" : "application",
           "value" : "/Applications/1Password.app"
+        },
+        {
+          "key" : "v",
+          "type" : "application",
+          "value" : "/Applications/Microsoft Teams.app"
         }
       ],
       "key" : "o",
