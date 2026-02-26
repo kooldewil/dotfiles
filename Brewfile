@@ -30,6 +30,7 @@ brew "mise"              # Runtime version manager (node, python, go, etc.)
 cask "font-meslo-lg-nerd-font"
 
 # Productivity & Automation
+cask "obsidian"          # Note-taking app
 cask "raycast"           # Launcher and productivity
 cask "bettertouchtool"   # Gesture and automation tool
 cask "elgato-stream-deck" # Stream Deck software
