@@ -46,6 +46,7 @@ cask "airbuddy"           # AirPods companion
 cask "lunar"              # Display brightness control
 
 # Utilities
+cask "altserver"          # AltStore server for iOS sideloading
 cask "daisydisk"          # Disk space analyzer
 cask "the-unarchiver"     # Archive extraction
 cask "appcleaner"         # App uninstaller
@@ -91,6 +92,7 @@ cask "calibre"            # Ebook manager
 cask "xmind"              # Mind mapping
 cask "raindropio"         # Bookmarks manager
 cask "fmail3"             # Gmail client
+cask "todoist-app"        # Task manager
 cask "logitech-g-hub"     # Logitech peripherals
 cask "spacewalker"        # Space companion
 cask "background-music"   # Per-app audio control
