@@ -43,6 +43,7 @@ cask "rectangle-pro"      # Window management
 cask "linearmouse"        # Mouse customization
 cask "keyclu"             # Keyboard shortcut viewer
 cask "showmeyourhotkeys"  # Hotkey viewer
+cask "homerow"            # Keyboard shortcuts for every button on screen
 cask "airbuddy"           # AirPods companion
 cask "lunar"              # Display brightness control
 
