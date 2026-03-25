@@ -19,6 +19,7 @@ brew "topgrade"          # System updater
 brew "uv"                # Python package manager
 brew "kanata"            # Keyboard remapping
 brew "mole"              # Deep clean and optimize Mac
+brew "ognistik/formulae/macrowhisper" # Keyboard macro triggered transcription
 
 # Shell Enhancement Tools
 brew "zoxide"            # Smarter cd command
