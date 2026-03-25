@@ -1,6 +1,9 @@
 # Brewfile for Shaunak's Mac Setup
 # Install with: brew bundle
 
+# Taps
+tap "ognistik/formulae"
+
 # CLI Tools
 brew "chezmoi"           # Dotfile manager
 brew "mas"               # Mac App Store CLI
