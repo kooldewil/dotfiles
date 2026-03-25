@@ -58,6 +58,7 @@ cask "setapp"             # App subscription service
 cask "keka"               # File archiver
 cask "macwhisper"         # Transcription tool
 cask "mouseless@preview"  # Keyboard-driven mouse
+cask "mfkrause/tap/consul" # Consul app
 
 # Notes & Knowledge
 cask "obsidian"           # Note-taking
