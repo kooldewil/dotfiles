@@ -3,6 +3,7 @@
 
 # Taps
 tap "ognistik/formulae"
+tap "mfkrause/tap"
 
 # CLI Tools
 brew "chezmoi"           # Dotfile manager
