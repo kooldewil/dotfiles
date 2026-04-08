@@ -59,6 +59,7 @@ cask "keka"               # File archiver
 cask "macwhisper"         # Transcription tool
 cask "mouseless@preview"  # Keyboard-driven mouse
 cask "mfkrause/tap/consul" # Consul app
+cask "dockdoor"           # Window previews on Dock hover
 
 # Notes & Knowledge
 cask "obsidian"           # Note-taking
