@@ -1,0 +1,76 @@
+{
+  "$schema" : "file:///opt/homebrew/share/macrowhisper/macrowhisper-schema.json",
+  "configVersion" : 2,
+  "defaults" : {
+    "actionDelay" : 0,
+    "activeAction" : "autoPaste",
+    "autoUpdateConfig" : true,
+    "bypassModes" : "",
+    "clipboardBuffer" : 5,
+    "clipboardIgnore" : "",
+    "clipboardStacking" : false,
+    "disableUpdateCheck" : false,
+    "history" : null,
+    "icon" : "",
+    "moveTo" : "",
+    "muteNotifications" : false,
+    "muteTriggers" : false,
+    "nextAction" : "",
+    "redactedLogs" : true,
+    "restoreClipboard" : true,
+    "restoreClipboardDelay" : 0.3,
+    "returnDelay" : 0.15,
+    "scheduledActionTimeout" : 5,
+    "scriptAsync" : true,
+    "scriptWaitTimeout" : 3,
+    "simEsc" : true,
+    "simKeypress" : false,
+    "simReturn" : false,
+    "smartCasing" : true,
+    "smartPunctuation" : true,
+    "smartSpacing" : true,
+    "watch" : "/Users/shaunakt/Documents/superwhisper"
+  },
+  "inserts" : {
+    "autoPaste" : {
+      "action" : ".autoPaste",
+      "actionDelay" : null,
+      "icon" : "•",
+      "inputCondition" : null,
+      "moveTo" : null,
+      "nextAction" : null,
+      "restoreClipboard" : null,
+      "restoreClipboardDelay" : null,
+      "simEsc" : null,
+      "simKeypress" : null,
+      "simReturn" : null,
+      "smartCasing" : null,
+      "smartPunctuation" : null,
+      "smartSpacing" : null,
+      "triggerApps" : null,
+      "triggerLogic" : "or",
+      "triggerModes" : null,
+      "triggerUrls" : null,
+      "triggerVoice" : null
+    }
+  },
+   "scriptsAS" : {  },
+  "scriptsShell" : {  },
+  "shortcuts" : {  },
+  "urls" : {
+      "google": {
+      "action": "https://www.google.com/search?q={{swResult||\\.$||}}",
+      "triggerVoice": "google|search",
+      "triggerLogic": "or",
+      "openWith": "Arc",
+      "openBackground": false
+    },
+    "kagi": {
+      "action": "https://www.kagi.com/search?q={{swResult||\\.$||}}",
+      "triggerVoice": "kagi",
+      "triggerLogic": "or",
+      "openWith": "Arc",
+      "openBackground": false
+    }
+  }
+}
