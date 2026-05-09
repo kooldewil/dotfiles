@@ -150,6 +150,26 @@ p10k configure
 mise install
 ```
 
+## Claude Skills
+
+Custom Claude Code skills are stored in `home/dot_claude/skills/` and deployed by
+chezmoi to `~/.claude/skills/`. After a fresh install, reinstall each skill:
+
+```bash
+# Install fix-ebooks skill (requires beautifulsoup4)
+pip3 install beautifulsoup4 -q
+# Double-click fix-ebooks.skill, or drag it into Claude Code's skills panel
+# Source files live at ~/.claude/skills/fix-ebooks/ after chezmoi apply
+```
+
+### fix-ebooks
+Diagnoses and fixes common EPUB problems (fragmented paragraphs, bad CSS colors,
+ligature chars, mojibake, embedded page numbers). Run with:
+```bash
+python3 ~/.claude/skills/fix-ebooks/scripts/fix_epub.py "path/to/book.epub"
+# Add --deep to use Claude AI for deeper HTML cleanup (needs anthropic SDK)
+```
+
 ## Troubleshooting
 
 ### Reset a file to dotfiles version
