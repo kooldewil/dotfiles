@@ -90,10 +90,13 @@ def audit_issues(soups):
         if pnums:
             issues['Embedded page numbers'] = issues.get('Embedded page numbers', 0) + pnums
 
-        consecutive_brs = sum(
-            1 for br in soup.find_all('br')
-            if br.find_next_sibling() and br.find_next_sibling().name == 'br'
-        )
+        consecutive_brs = 0
+        for br in soup.find_all('br'):
+            nxt = br.find_next_sibling()
+            if nxt and nxt.name == 'br':
+                nxt2 = nxt.find_next_sibling()
+                if nxt2 and nxt2.name == 'br':
+                    consecutive_brs += 1
         if consecutive_brs:
             issues['Excess blank lines'] = issues.get('Excess blank lines', 0) + consecutive_brs
 
@@ -178,20 +181,11 @@ def remove_running_headers(soup, threshold=3):
     return removed
 
 
-def fix_excess_br_spacing(soup):
-    """Collapse runs of 2+ consecutive <br> tags down to one."""
-    removed = 0
-    changed = True
-    while changed:
-        changed = False
-        for br in soup.find_all('br'):
-            nxt = br.find_next_sibling()
-            if nxt and nxt.name == 'br':
-                nxt.decompose()
-                removed += 1
-                changed = True
-                break
-    return removed
+def fix_excess_br_spacing(content):
+    """Collapse runs of 3+ consecutive <br> tags to exactly two (one blank line)."""
+    before = len(re.findall(r'(?:<br\s*/>){3,}', content))
+    content = re.sub(r'(?:<br\s*/>){3,}', '<br/><br/>', content)
+    return content, before
 
 
 def fix_css_colors(soup):
@@ -224,6 +218,8 @@ def apply_text_fixes(soup):
 
 
 def process_html(content, issue_names):
+    if 'Excess blank lines' in issue_names:
+        content, _ = fix_excess_br_spacing(content)
     soup = BeautifulSoup(content, 'html.parser')
     if not soup.find('body'):
         return content
@@ -232,8 +228,6 @@ def process_html(content, issue_names):
         merge_fragmented_paragraphs(soup)
         remove_page_numbers(soup)
         remove_running_headers(soup)
-    if 'Excess blank lines' in issue_names:
-        fix_excess_br_spacing(soup)
     if 'Hardcoded CSS colors' in issue_names:
         fix_css_colors(soup)
     apply_text_fixes(soup)
