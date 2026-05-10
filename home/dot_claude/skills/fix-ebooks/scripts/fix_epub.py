@@ -90,6 +90,13 @@ def audit_issues(soups):
         if pnums:
             issues['Embedded page numbers'] = issues.get('Embedded page numbers', 0) + pnums
 
+        consecutive_brs = sum(
+            1 for br in soup.find_all('br')
+            if br.find_next_sibling() and br.find_next_sibling().name == 'br'
+        )
+        if consecutive_brs:
+            issues['Excess blank lines'] = issues.get('Excess blank lines', 0) + consecutive_brs
+
         # Check <style> blocks AND inline style= attributes for hardcoded colors
         if issues.get('Hardcoded CSS colors') is not True:
             for tag in soup.find_all('style'):
@@ -171,6 +178,22 @@ def remove_running_headers(soup, threshold=3):
     return removed
 
 
+def fix_excess_br_spacing(soup):
+    """Collapse runs of 2+ consecutive <br> tags down to one."""
+    removed = 0
+    changed = True
+    while changed:
+        changed = False
+        for br in soup.find_all('br'):
+            nxt = br.find_next_sibling()
+            if nxt and nxt.name == 'br':
+                nxt.decompose()
+                removed += 1
+                changed = True
+                break
+    return removed
+
+
 def fix_css_colors(soup):
     fixed = 0
     for tag in soup.find_all('style'):
@@ -209,6 +232,8 @@ def process_html(content, issue_names):
         merge_fragmented_paragraphs(soup)
         remove_page_numbers(soup)
         remove_running_headers(soup)
+    if 'Excess blank lines' in issue_names:
+        fix_excess_br_spacing(soup)
     if 'Hardcoded CSS colors' in issue_names:
         fix_css_colors(soup)
     apply_text_fixes(soup)

@@ -46,6 +46,7 @@ automatically.
 | Encoding / mojibake | Garbled smart quotes and dashes -> correct Unicode |
 | Embedded page numbers | Isolated numeric `<p>` elements removed |
 | Running headers | Short phrases repeated 3+ times (PDF header echoes) removed |
+| Excess blank lines | Consecutive `<br>` tags (e.g. `<br/><br/><br/>`) collapsed to a single `<br>` |
 | Hardcoded CSS colors | Both `<style>` blocks and inline `style=` attributes stripped for dark mode |
 | mimetype integrity | Ensures `mimetype` is first in zip and stored uncompressed |
 
