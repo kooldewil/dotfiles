@@ -1,0 +1,23 @@
+# Ghostty configuration
+# Run `ghostty +show-config --default --docs` for all available options
+
+# Font — MesloLGS NF installed via Brewfile (font-meslo-lg-nerd-font)
+# Required for Powerlevel10k glyphs
+font-family = MesloLGS NF
+font-size = 13
+font-feature = -calt, -liga, -dlig
+
+# Theme — Catppuccin Mocha (matches fzf, tmux, delta)
+theme = catppuccin-mocha
+
+# Window
+window-padding-x = 4
+window-padding-y = 4
+window-inherit-working-directory = false
+working-directory = home
+
+# macOS — use Option as Alt so shell bindings (Alt+f/b word-jump) work
+macos-option-as-alt = true
+
+# Keybindings
+keybind = shift+enter=text:\n

@@ -26,6 +26,9 @@ brew "ognistik/formulae/macrowhisper" # Keyboard macro triggered transcription
 # Note: zsh-autosuggestions and zsh-syntax-highlighting
 # are now managed by Zinit plugin manager
 
+# Terminal
+cask "ghostty"                # GPU-accelerated terminal emulator
+
 # Fonts (for Powerlevel10k)
 cask "font-meslo-lg-nerd-font"
 
