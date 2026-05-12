@@ -3,34 +3,36 @@
 #
 # Philosophy: mise handles all CLI dev tools (bat, fd, rg, eza, fzf, etc.)
 # Scoop handles: bootstrap tools, Windows-native tools, fonts, and GUI apps.
+#
+# Not in any official Scoop bucket — install via winget instead:
+#   1password:      winget install AgileBits.1Password
+#   1password-cli:  winget install AgileBits.1Password.CLI
+#   ghostty:        winget install --id ghostty.ghostty  (or https://ghostty.org)
+#   whatsapp:       winget install 9NKSQGP7F2NH
+#   dropbox:        winget install Dropbox.Dropbox
+#   logitech-g-hub: https://www.logitechg.com/en-us/innovation/g-hub.html
+#   todoist:        winget install Doist.Todoist
 
 [scoop]
 buckets = ["extras", "nerd-fonts"]
 
-[scoop.work]
-buckets  = []
-packages = []
-
 # Bootstrap (must be in Scoop — available before mise runs)
 # GUI apps and Windows-native tools without mise equivalents
 packages = [
-  "mise",             # Runtime version manager — bootstraps all CLI dev tools
-  "kanata",           # Keyboard remapping
-  "Meslo-NF",         # Nerd Font for terminal/prompt (Powerlevel10k)
-  "1password",        # Password manager
-  "1password-cli",    # 1Password CLI (used by chezmoi for secrets)
-  "ghostty",          # GPU-accelerated terminal
-  "obsidian",         # Note-taking
-  "discord",          # Communication
-  "slack",            # Communication
-  "telegram",         # Communication
-  "whatsapp",         # Communication
-  "vlc",              # Media player
-  "spotify",          # Music
-  "dropbox",          # Cloud storage
-  "ollama",           # Local AI models
-  "calibre",          # Ebook manager
-  "logitech-g-hub",   # Logitech peripherals
-  "todoist",          # Task manager
-  "flow-launcher",    # Launcher (Raycast equivalent on Windows)
+  "mise",           # Runtime version manager — bootstraps all CLI dev tools (main bucket)
+  "kanata",         # Keyboard remapping
+  "Meslo-NF",       # Nerd Font for terminal/prompt (Powerlevel10k)
+  "obsidian",       # Note-taking
+  "discord",        # Communication
+  "slack",          # Communication
+  "telegram",       # Communication
+  "vlc",            # Media player
+  "spotify",        # Music
+  "ollama",         # Local AI models (main bucket)
+  "calibre",        # Ebook manager
+  "flow-launcher",  # Launcher (Raycast equivalent on Windows)
 ]
+
+[scoop.work]
+buckets  = []
+packages = []
