@@ -1,0 +1,41 @@
+;; shared.kbd — OS-agnostic timings and aliases
+;; Included by kanata.kbd.tmpl after the OS-specific file
+
+;; ============================================================
+;; Timing Variables - adjust these to tune tap vs hold feel
+;; ============================================================
+(defvar
+  tap-time 200      ;; Max time (ms) for a tap
+  hold-time 250     ;; Min time (ms) to trigger hold
+  chord-time 80     ;; Window (ms) for chord detection
+
+  ;; Separate timing for home row mods (can be more forgiving)
+  hrm-tap 200
+  hrm-hold 250
+)
+
+;; ============================================================
+;; Aliases - reusable key behaviors
+;; ============================================================
+(defalias
+  ;; ----- Hyper & Meh (Voyager compatibility) -----
+  hyp (tap-hold $tap-time $hold-time esc (multi lctl lsft lalt lmet))
+  meh (tap-hold $tap-time $hold-time ralt (multi lctl lsft lalt))
+
+  ;; ----- Home Row Mods (left hand) -----
+  hm-a (tap-hold $hrm-tap $hrm-hold a lctl)
+  hm-s (tap-hold $hrm-tap $hrm-hold s lalt)
+  hm-d (tap-hold $hrm-tap $hrm-hold d lmet)
+  hm-f (tap-hold $hrm-tap $hrm-hold f lsft)
+
+  ;; ----- Home Row Mods (right hand) -----
+  hm-j (tap-hold $hrm-tap $hrm-hold j rsft)
+  hm-k (tap-hold $hrm-tap $hrm-hold k rmet)
+  hm-l (tap-hold $hrm-tap $hrm-hold l ralt)
+  hm-; (tap-hold $hrm-tap $hrm-hold ; rctl)
+
+  ;; ----- Layer Access -----
+  spc-sym (tap-hold $tap-time $hold-time spc (layer-while-held symbols))
+  ret-nav (tap-hold $tap-time $hold-time ret (layer-while-held navigation))
+  tab-app (tap-hold $tap-time $hold-time tab (layer-while-held apps))
+)

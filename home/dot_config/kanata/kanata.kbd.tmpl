@@ -1,0 +1,8 @@
+{{- if eq .chezmoi.os "darwin" }}
+(include "macos-macbook.kbd")
+{{- else if eq .chezmoi.os "windows" }}
+(include "windows.kbd")
+{{- else }}
+;; Unsupported OS: {{ .chezmoi.os }} - no kanata config generated
+{{- end }}
+(include "shared.kbd")
