@@ -1,0 +1,25 @@
+[metadata]
+name = "recent-files"
+description = "Recently modified files (git changes + filesystem)"
+requirements = ["bat"]
+
+[source]
+command = [
+  "fd --type f --changed-within 7d",
+  "fd --type f --changed-within 1h",
+  "git diff --name-only HEAD~10 {{ if eq .chezmoi.os "windows" }}2>$null{{ else }}2>/dev/null || true{{ end }}",
+]
+no_sort = true
+frecency = false
+
+[preview]
+command = "bat -n --color=always '{}'"
+
+[keybindings]
+enter = "actions:edit"
+
+[actions.edit]
+description = "Open in editor"
+command = "${EDITOR:-nvim} '{}'"
+shell = "{{ if eq .chezmoi.os "windows" }}powershell{{ else }}bash{{ end }}"
+mode = "execute"

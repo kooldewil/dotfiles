@@ -1,0 +1,18 @@
+[metadata]
+name = "pnpm-scripts"
+description = "Run pnpm scripts from package.json"
+requirements = ["pnpm"]
+
+[source]
+command = "pnpm run --silent {{ if eq .chezmoi.os "windows" }}2>$null{{ else }}2>/dev/null{{ end }}"
+
+[preview]
+command = "echo 'pnpm run {}'"
+
+[keybindings]
+enter = "actions:run"
+
+[actions.run]
+description = "Run the selected pnpm script"
+command = "pnpm run '{}'"
+mode = "execute"
