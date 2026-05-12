@@ -1,0 +1,75 @@
+{{ if .dev_computer -}}
+# Global mise configuration — single source of truth for dev tools
+# OS package managers (brew/scoop/apt) only handle system deps + GUI apps
+# https://mise.jdx.dev/configuration.html
+
+[tools]
+# Language runtimes
+node = "lts"
+"npm:pnpm" = "latest"
+deno = "latest"
+bun = "latest"
+python = "latest"
+uv = "latest"
+go = "latest"
+rust = "latest"
+# zig doubles as a C/C++ compiler via `zig cc` — used as CC below so tools
+# like nvim-treesitter can compile parsers without a system gcc.
+zig = "latest"
+
+# mise ecosystem tools
+usage = "latest"
+neovim = "latest"
+chezmoi = "latest"
+
+# Cross-platform CLI tools (aqua backend — checksum-verified)
+"aqua:sharkdp/bat" = "latest"
+"aqua:sharkdp/fd" = "latest"
+"aqua:BurntSushi/ripgrep" = "latest"
+"aqua:dandavison/delta" = "latest"
+"aqua:jesseduffield/lazygit" = "latest"
+"aqua:jj-vcs/jj" = "latest"
+"aqua:cli/cli" = "latest"
+"aqua:charmbracelet/glow" = "latest"
+"aqua:jqlang/jq" = "latest"
+"aqua:FiloSottile/age" = "latest"
+"aqua:dundee/gdu" = "latest"
+"aqua:golangci/golangci-lint" = "latest"
+"aqua:gitleaks/gitleaks" = "latest"
+"aqua:topgrade-rs/topgrade" = "latest"
+"aqua:mikefarah/yq" = "latest"
+"aqua:alexpasmantier/television" = "latest"
+"aqua:biomejs/biome" = "latest"
+
+# Cross-platform shell tools
+"aqua:junegunn/fzf" = "latest"
+"aqua:ajeetdsouza/zoxide" = "latest"
+atuin = "latest"
+"aqua:carapace-sh/carapace-bin" = "latest"
+
+{{- if ne .chezmoi.os "windows" }}
+# macOS/Linux only (cargo builds)
+"cargo:pay-respects" = "latest"
+"cargo:tokei" = "latest"
+eza = "latest"
+
+# Unix-only (no Windows binary)
+"aqua:PaulJuliusMartinez/jless" = "latest"
+{{- end }}
+{{- if .personal }}
+
+# Personal-only tools
+yt-dlp = "latest"
+"aqua:schollz/croc" = "latest"
+{{- end }}
+
+[settings]
+experimental = true
+activate_aggressive = true
+legacy_version_file = true
+idiomatic_version_file_enable_tools = ['node', 'pnpm']
+
+[settings.node]
+gpg_verify = false
+
+{{- end }}

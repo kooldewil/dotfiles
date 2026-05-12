@@ -1,199 +1,284 @@
-# Dotfiles Comparison: Shaunak vs Drewtopia
+# Dotfiles Comparison: You vs Drewtopia
 
-_Generated: 2026-05-12_
+Generated: 2026-05-12
 
 ---
 
-## Section 1: Tools/configs Drew has that you don't
+## Section 1: Tools/Configs Drew Has That You Don't
 
-### Dev Tooling (VCS, diff tools, language tooling)
+### Dev Tooling
 
 | Tool | Description | Where configured |
 |------|-------------|-----------------|
-| **jj (Jujutsu)** | Modern VCS layered on top of git — better conflict handling, first-class revsets, no staging area | `dot_config/jj/config.toml.tmpl` |
-| **delta** | Syntax-highlighted, side-by-side git diff pager | `dot_config/git/config.tmpl` (`[pager]` + `[delta]`) |
-| **LazyGit** | TUI git client | `dot_config/lazygit/` |
-| **Commit signing** | SSH Ed25519 key signing for personal commits | `dot_config/git/config.tmpl` (`[commit] gpgSign = true`) |
-| **1Password CLI** | Secrets from vault in chezmoi templates (name, email, API tokens) | `home/.chezmoi.toml.tmpl`, `dot_zshenv.tmpl` |
+| **jj (Jujutsu)** | Git-compatible VCS with better branch model, rich aliases, SSH signing | `dot_config/jj/config.toml.tmpl` |
+| **lazygit** | Terminal UI for git | `mise/config.toml.tmpl` (aqua backend) |
+| **delta** | Syntax-highlighted git diffs and pager | `mise/config.toml.tmpl`; wired as jj pager |
+| **carapace** | Universal shell completion engine (replaces zsh-completions) | `shell/020-shell-tools.sh.tmpl` |
+| **television** (tv) | Context-aware fuzzy finder (Ctrl+T) with channels for atuin, git, chezmoi, dirs, obsidian | `dot_config/television/`; wired in `020-shell-tools` |
+| **pay-respects** | Rust `thefuck` replacement — corrects last command via `f` alias | `shell/030-system-tools.sh.tmpl` |
+| **fnox** | Secrets manager with shell integration | `shell/020-shell-tools.sh.tmpl` |
+| **gitleaks** | Secrets scanner | `mise/config.toml.tmpl` |
+| **biome** | JS/TS formatter + linter (all-in-one) | `mise/config.toml.tmpl` |
+| **zig** | Used as `CC` for nvim-treesitter parser compilation | `mise/config.toml.tmpl` |
+| **tokei** | Fast code statistics (lines, files, etc.) | `mise/config.toml.tmpl` |
+| **jless** | JSON/YAML TUI viewer | `mise/config.toml.tmpl` (unix only) |
+| **qmd** | Local markdown search engine (BM25 + vector + LLM rerank) | `mise/config.toml.tmpl`; Claude plugin `qmd@qmd` |
+| **gdu** | Fast disk usage analyzer (TUI) | `mise/config.toml.tmpl` |
+| **pnpm globals** | Managed set of pnpm packages installed on every machine | `.chezmoidata/pnpm-globals.yaml` + script |
+| **Aqua backend for mise** | Checksum-verified tool installs (bat, fd, rg, delta, lazygit, jj, gh…) | `mise/config.toml.tmpl` |
 
 ### Terminal & Shell
 
-| Tool | Description | Where configured |
+| Tool/Pattern | Description | Where configured |
 |------|-------------|-----------------|
-| **Ghostty** | GPU-accelerated terminal (faster than Terminal.app) | `dot_config/ghostty/config` |
-| **Tmux** | Terminal multiplexer with catppuccin theme, session resurrection, floating panes | `dot_config/tmux/tmux.conf` |
-| **Television** | Context-aware fuzzy finder for history/files/channels; replaces atuin's Ctrl+R | `dot_config/shell/020-shell-tools.sh.tmpl` |
-| **Carapace** | Universal shell completion engine with bridge support | `dot_config/shell/020-shell-tools.sh.tmpl` |
-| **pay-respects** | Rust-based command correction (thefuck alternative) | `dot_config/shell/030-system-tools.sh.tmpl` |
-| **Navi / cheatsheets** | Interactive cheatsheet system with fzf, bound to Ctrl+\ | `dot_config/shell/040-cheatsheets.sh.tmpl` |
-| **fnox** | Shell-integrated secrets manager | `dot_config/shell/020-shell-tools.sh.tmpl` |
-| **topgrade** | All-in-one system updater (brew, mise, npm globals, etc.) | `dot_config/topgrade.toml` |
-| **atuin (enhanced)** | Drew's config adds: secrets regex filtering (AWS keys, GitHub tokens), daemon mode, workspace filtering | `dot_config/atuin/config.toml.tmpl` |
+| **zsh-active-cheatsheet** | Inline cheatsheet browser bound to `^\` (ctrl+backslash) | `shell/040-cheatsheets.sh.tmpl`; cheatsheets at `dot_config/cheatsheets/` |
+| **Compiled cheatsheets** | Cheats for chezmoi, git, shell, tmux — browsable via fzf | `dot_config/cheatsheets/{chezmoi,git,shell,tmux}/` |
+| **navi** | Interactive cheatsheet runner | `dot_config/navi/config.yaml` |
+| **Shell module 025-tmux.sh** | Rich tmux helpers: `t`, `ta`, `th`, `tp`, `tl`, `tk`, `tq`, `tka`, `tmuxkeys`, `tmuxflow`, `thelp` | `shell/025-tmux.sh.tmpl` |
+| **Richer eza aliases** | `l`, `ll`, `llm`, `la`, `lx`, `lt`, `llt`, `ltt` variants | `shell/050-common-aliases.sh.tmpl` |
+| **No zsh-autosuggestions** | Removed as redundant with atuin + fzf-tab (cleaner startup) | (intentionally absent) |
+| **atuin up-arrow binding** | Up-arrow also triggers atuin history (not just Ctrl+R) | `shell/020-shell-tools.sh.tmpl` |
+| **television cable channels** | Custom tv channels for atuin-history, chezmoi, dirs, dotfiles, mise-tools, obsidian-notes, pnpm-packages, recent-files, todo-comments | `dot_config/television/cable/` |
 
-### Editor
+### Tmux (full plugin stack)
 
-| Tool | Description | Where configured |
-|------|-------------|-----------------|
-| **Neovim + LazyVim** | Full Neovim setup with 37 extras: Claude Code, Copilot, debugging, testing, 10+ language servers | `dot_config/nvim/` (`init.lua`, `lazyvim.json`, `lua/plugins/`) |
-| **hardtime.nvim** | Forces hjkl navigation by disabling arrow keys — builds muscle memory | `dot_config/nvim/lua/plugins/hardtime.lua` |
-| **chezmoi.nvim** | Edit chezmoi source files directly from Neovim with live preview | `dot_config/nvim/lua/plugins/chezmoi.lua` |
+| Plugin | Purpose |
+|--------|---------|
+| **tmux-sessionx** | Session picker with preview (prefix+o) |
+| **tmux-floax** | Floating terminal popup (prefix+p) |
+| **tmux-thumbs** | Quick visual copy without entering copy mode (prefix+Space) |
+| **tmux-fzf-url** | Pick and open URLs from scrollback (prefix+u) |
+| **tmux-resurrect** + **tmux-continuum** | Persist and auto-restore sessions across reboots |
+| **catppuccin-tmux** | Status bar theme |
+| **tmux-yank** | Clipboard integration |
+
+Drew's tmux prefix is `^A`, with vim-tmux-navigator for pane navigation.
+
+### Editor (Neovim/LazyVim)
+
+Drew has a full LazyVim Neovim config you don't have at all:
+- `dot_config/nvim/` with `init.lua`, `lazyvim.json`, `lazy-lock.json`
+- Custom plugins: `chezmoi.lua`, `catppuccin.lua`, `hardtime.lua` (bad habits enforcer), `snacks.lua`, `surround.lua`, `tmux.lua`
+- Neovim installed via mise (always latest, upgrades cleanly)
 
 ### Window Management
 
 | Tool | Description | Where configured |
 |------|-------------|-----------------|
-| **AeroSpace** | Tiling window manager with named workspaces (B/D/M/N/O/S/T/W), app auto-assignment, vim-like navigation | `dot_config/aerospace/aerospace.toml` |
-| **JankyBorders** | Active window border highlighting (works with AeroSpace) | `dot_config/aerospace/aerospace.toml` (auto-started) |
-| **jordanbaird-ice** | Menubar icon manager / hider | Brewfile (cask) |
-| **Lunar** | Monitor brightness and color management | Brewfile (cask) |
-| **BetterDisplay** | Advanced display resolution and brightness control | Brewfile (cask) |
+| **AeroSpace** | Tiling window manager (i3-style) with named workspaces B/D/M/N/T/W | `dot_config/aerospace/aerospace.toml` |
+| **JankyBorders** | Window border highlighting for active/inactive windows | Called from AeroSpace `after-startup-command` |
 
 ### Claude Code / AI Tooling
 
+Drew's settings.json has significantly more:
+
+**More allowed tools:** `jj`, `pnpm run`, `docker`, `kubectl`, `terraform`, `delta`, `zoxide`, `duf`, `htop`, `btop`, `hexyl`
+
+**More hooks:**
+- `block-secrets.py` — pre-Read/Edit/Write secrets scanner
+- `block-dangerous-commands.sh` — pre-Bash safety check
+- `after-edit.sh` — PostToolUse on file edits
+- `end-of-turn.sh` — Stop hook
+- `notify.sh` — Notification hook
+- `jj-block-trunk.sh` — blocks edits on jj trunk
+- `jj-describe-claude.sh` — auto-describes jj commits
+- Auto-fix permissions on SessionStart
+
+**More enabled plugins:** `caveman`, `obsidian`, `qmd`, `code-review`, `feature-dev`, `typescript-lsp`, `commit-commands`, `playwright`, `code-simplifier`, `plugin-dev`, `explanatory-output-style`, `learning-output-style`, `hookify`, `superpowers`, `context7`
+
+**Custom slash commands:** `vault-sync.md`, `close.md`
+
+**MCP servers:** `ha-mcp` (Home Assistant), `mcp-obsidian`
+
+**Skills:** `audit-rules-and-skills`, `reorganize-memory`, `close`
+
+**Memory system:** `symlink_memory.tmpl` + `symlink_rules.tmpl` — memory and rules as chezmoi symlinks
+
+**CCStatusLine:** `bun x -y ccstatusline@latest` (vs your custom bash script)
+
+### Apps (Drew has, you don't)
+
+| App | Category | Purpose |
+|-----|----------|---------|
+| iina | Media | macOS-native video player |
+| Hammerspoon | Automation | Lua-based macOS automation |
+| Hazel | Automation | File rule automation |
+| jordanbaird-ice | Menu bar | Menu bar item hider |
+| JDownloader | Utilities | Download manager |
+| Muzzle | Utilities | Silences notifications during screen share |
+| Unclack | Utilities | Mutes keyboard mic while typing |
+| Onyx | Utilities | macOS maintenance tool |
+| Orion | Browser | WebKit browser with extension support |
+| SoundSource | Audio | Per-app audio routing |
+| glance-chamburr | Quick Look | Quick Look for many file types |
+| syntax-highlight | Quick Look | Syntax highlighting in Quick Look |
+| Fmail3 | Email | Native Gmail client |
+| Jump Desktop Connect | Remote | Remote desktop server |
+| KeyCastr | Input | Shows keystrokes on screen |
+
+### Secrets & Auth
+
 | Tool | Description | Where configured |
 |------|-------------|-----------------|
-| **CLAUDE.md tracked in chezmoi** | Global Claude instructions (VCS preference, memory system, security rules) sync'd across machines | `dot_claude/CLAUDE.md.tmpl` |
-| **Claude settings + hooks** | Pre-tool secret blocking, dangerous command filter, session startup checks, jj VCS integration | `dot_claude/settings.json.tmpl` |
-| **Memory push/pull hooks** | Auto-commits and pushes `~/.claude/memory` git repo; pulls on session start | `dot_claude/hooks/memory-push.sh`, `memory-pull.sh` |
-| **jj-describe hook** | PreToolUse: auto-updates jj working revision description with each file Claude edits | `dot_claude/hooks/jj-describe-claude.sh` |
-| **session-start-git-status** | SessionStart hook: warns if branch >3 days old, 20+ commits ahead, stale worktrees | `dot_claude/hooks/session-start-git-status.sh` |
-| **jj-block-trunk hook** | Prevents commits directly to trunk | `dot_claude/hooks/jj-block-trunk.sh` |
-| **Custom commands** | `/close` (end session, capture thoughts, write SESSION_LOG), `/vault-sync` (sync memory vault) | `dot_claude/commands/` |
-| **Skills framework** | Skills installed from 6 marketplaces (caveman, claude-brain-sync, karpathy-skills, etc.) | `.chezmoidata/claude.toml`, `dot_claude/skills/` |
-| **MCP servers** | Home Assistant MCP, Obsidian MCP, sequential-thinking | `dot_claude/mcp.json.tmpl` |
-| **ccstatusline** | Claude Code status line (tracked and configured in chezmoi) | `dot_config/ccstatusline/` |
+| **fnox** | Shell-integrated secrets manager | `shell/020-shell-tools.sh.tmpl` |
+| **Backup + junction for claude memory** | `run_before_03-backup-claude-memory` + `run_after_99-claude-memory-junction` | `.chezmoiscripts/common/` |
 
-### Apps (GUI)
+### Automation (Chezmoi Scripts)
 
-| Tool | Description | Where configured |
-|------|-------------|-----------------|
-| **Hammerspoon** | Lua-scriptable macOS automation | Brewfile (cask) |
-| **Hazel** | Automated file organization rules | Brewfile (cask) |
-| **SoundSource** | Per-app audio routing and volume control | Brewfile (cask) |
-| **Unclack** | Mutes keyboard typing sounds during calls | Brewfile (cask) |
-| **Muzzle** | Silences notifications during screen sharing | Brewfile (cask) |
-| **Bruno** | Open-source API client (Postman alternative) | Brewfile (cask) |
-| **Raindrop.io** | Bookmark manager | Brewfile (cask) |
-| **KeyClu** | Shows keyboard shortcuts overlay | Brewfile (cask) |
-| **Lookaway** | Screen break reminder | Brewfile (cask) |
-| **Orion browser** | WebKit browser with extension support | Brewfile (cask) |
-| **Zen browser** | Firefox-based privacy browser | Brewfile (cask) |
-| **WezTerm** | GPU terminal emulator (secondary) | Brewfile (cask) |
-| **IINA** | Native macOS media player | Brewfile (cask) |
-| **ImageOptim** | Image compression tool | Brewfile (cask) |
-| **glance-chamburr / Syntax Highlight** | QuickLook plugins for code files | Brewfile (casks) |
+Scripts Drew has that you don't:
 
-### Automation (chezmoi scripts)
-
-| Script | Description |
-|--------|-------------|
-| `run_before_03-backup-claude-memory` | Backs up `~/.claude/memory` before each chezmoi apply |
-| `run_onchange_after_10-install-mise-tools` | Installs all mise-managed tools after config change |
-| `run_onchange_after_15-pnpm-globals` | Installs pnpm globals (@openai/codex, @playwright/cli, etc.) |
-| `run_onchange_after_20-configure-shell-tools` | Configures atuin, carapace, zoxide completions |
-| `run_onchange_after_30-set-git-origin` | Sets git remote origin from constants.toml |
-| `run_onchange_after_40-install-claude-code` | Installs/upgrades Claude Code CLI |
-| `run_onchange_after_55-update-claude-marketplaces` | Refreshes Claude skill marketplaces |
+| Script | Purpose |
+|--------|---------|
+| `run_before_03-backup-claude-memory` | Backs up claude memory before apply |
+| `run_before_05-update-tv-channels` | Updates television cable channels |
+| `run_after_50-fix-claude-plugin-permissions` | Fixes Claude plugin file permissions |
+| `run_after_99-claude-memory-junction` | Creates junction/symlink for claude memory |
+| `run_onchange_after_15-pnpm-globals` | Installs pnpm global packages from pnpm-globals.yaml |
+| `run_onchange_after_30-set-git-origin` | Sets git remote origin |
+| `run_onchange_after_40-install-claude-code` | Installs Claude Code CLI |
+| `run_onchange_after_55-update-claude-marketplaces` | Updates Claude plugin marketplaces |
 | `run_onchange_after_60-install-skills` | Installs skills from skills.yaml |
-| `run_before_install-brew-packages` | Installs Homebrew packages (darwin) |
-| `run_onchange_after_60-configure-dock` | Configures macOS Dock layout via dockutil |
+| `run_onchange_before_00-install-mise` | Installs mise before everything else |
+| `run_onchange_after_50-setup-kanata` | Sets up kanata daemon |
+| `run_onchange_after_60-configure-dock` | Configures macOS Dock layout |
+
+Drew also has `.chezmoitemplates/` with reusable template functions (`path-functions`, `shell-config-functions`, `tool-functions`) and `.chezmoidata/` with structured data files.
+
+### Other Configs
+
+- `dot_config/bat/config` — bat pager config
+- `dot_config/btop/btop.conf` — system monitor config
+- `dot_config/glow/glow.yml` — markdown reader config
+- `dot_config/ripgrep/config` — rg defaults
+- `dot_config/fd/ignore` — fd ignore rules
+- `dot_config/topgrade.toml` — upgrade tool config
+- `dot_config/homebrew/brew.env.tmpl` — Homebrew env settings
+- `dot_github/copilot-instructions.md.tmpl` — GitHub Copilot instructions
+- `dot_local/bin/cvault` — custom vault script
+- `dot_ssh/` — full SSH config with 1Password agent keys
 
 ---
 
-## Section 2: Tools/configs you have that Drew doesn't
+## Section 2: Tools/Configs You Have That Drew Doesn't
+
+### Dev Tooling
+
+| Tool | Description | Where configured |
+|------|-------------|-----------------|
+| **Separate path management** | `path-management.sh` + `paths/` subdir (default/custom/priority) | `dot_config/path-management.sh.tmpl` + `dot_config/shell/paths/` |
 
 ### Terminal & Shell
 
-| Tool | Description | Where configured |
-|------|-------------|-----------------|
-| **MacroWhisper** | Voice-to-text macros: `google <phrase>` → Arc, `kagi <phrase>` → Arc search | `dot_config/macrowhisper/macrowhisper.json` |
-| **path-management.sh** | Separate PATH manipulation helper with documented priority order | `dot_config/path-management.sh.tmpl` |
+| Tool/Pattern | Description |
+|------|-------------|
+| **zsh-autosuggestions** | Fish-style autosuggestions (Drew removed this) |
+| **Shell module 010-history.sh** | History settings as standalone module |
+| **Shell module 020-completion.sh** | Completion config separate from tools |
+| **Shell module 070-functions.sh** | Standalone functions file |
+| **Separate paths/ directory** | `default.paths.sh`, `custom.paths.sh`, `priority.paths.sh` — granular PATH management |
 
-### Apps (GUI)
+### Claude Code
 
-| Tool | Description | Where configured |
-|------|-------------|-----------------|
-| **BetterTouchTool** | Advanced gesture and shortcut customization for trackpad/mouse | Brewfile (cask) |
-| **DaisyDisk** | Visual disk usage analyzer | Brewfile (cask) |
-| **AppCleaner** | Complete app removal with leftover file detection | Brewfile (cask) |
-| **AdGuard** | System-wide ad/tracker blocking | Brewfile (cask) |
-| **Mouseless** | Keyboard-driven mouse cursor control | Brewfile (cask) |
-| **DockDoor** | Dock hover window previews (like Windows taskbar) | Brewfile (cask) |
-| **Evernote** | Note-taking / web clipper | Brewfile (cask) |
-| **Stremio** | Media streaming aggregator | Brewfile (cask) |
-| **Calibre** | Ebook management and conversion | Brewfile (cask) |
+| Item | Description |
+|------|-------------|
+| **skill-creator plugin** | `skill-creator@claude-plugins-official` |
+| **brew allowed** | `Bash(brew :*)` in permissions |
+| **chezmoi allowed** | `Bash(chezmoi :*)` in permissions |
+| **mise allowed** | `Bash(mise :*)` in permissions |
+| **WebFetch for GitHub** | `WebFetch(domain:raw.githubusercontent.com)` and `WebFetch(domain:github.com)` |
 
-### MAS Apps (you have, Drew doesn't)
+### Apps (You have, Drew doesn't)
 
-| App | Description |
-|-----|-------------|
-| **Bear** | Markdown note-taking app |
-| **CloudMounter** | Cloud storage as local disk mounts |
-| **rcmd** | App switcher via right-Cmd + key |
-| **Velja** | Browser picker by URL/source app |
-| **Hyperduck** | Send URLs from iPhone to Mac |
+| App | Category |
+|-----|----------|
+| BetterTouchTool | Automation/gestures |
+| Homerow | Keyboard-driven clicks |
+| AirBuddy | AirPods companion |
+| Alt-tab | Window switcher |
+| Linearmouse | Mouse customization |
+| DaisyDisk | Disk analyzer |
+| AppCleaner | App uninstaller |
+| AdGuard | Ad blocker |
+| MacWhisper + MacroWhisper | Transcription (you have both) |
+| Mouseless | Keyboard-driven mouse |
+| DockDoor | Window previews on Dock hover |
+| Day One | Journaling |
+| Perplexity | AI search |
+| Bloom | Music player |
+| Calibre | Ebook manager |
+| XMind | Mind mapping |
+| Stremio | Media streaming |
+| Background Music | Per-app audio |
+| Fliqlo | Flip clock screensaver |
+| Logitech G Hub | Logitech peripherals |
+| AltServer | iOS sideloading |
+
+### Skills
+
+| Skill | Purpose |
+|-------|---------|
+| **fix-ebooks** | Custom ebook fixing scripts |
+| **handoff** | Compact conversation handoffs |
 
 ---
 
 ## Section 3: Structural Differences
 
-| Area | You (Shaunak) | Drew |
-|------|--------------|------|
-| Shell framework | Oh My Zsh + Zinit + p10k | Oh My Zsh + Zinit + p10k |
-| Terminal | Terminal.app | Ghostty |
-| Primary VCS | git | jj (on top of git) |
-| Git config location | `dot_gitconfig` (home dir) | `dot_config/git/config` (XDG) |
-| Git diff pager | Default | delta (side-by-side, syntax-highlighted) |
-| Cross-platform | macOS only | macOS + Linux + Windows/WSL |
-| Secret management | None tracked | 1Password CLI + fnox |
-| Commit signing | Not configured | SSH Ed25519 (personal), auto-signed |
-| Chezmoi scripts | 1 (kanata setup) | 20+ (brew, mise, pnpm, Claude, dock, git, skills) |
-| Editor | nano (git default) | nvim + LazyVim (37 extras, Claude Code plugin) |
-| Neovim config tracked | No | Yes (full LazyVim setup) |
-| Window management | Raycast + Rectangle Pro | AeroSpace tiling WM + JankyBorders + Rectangle Pro |
-| Claude Code in chezmoi | No | Yes (CLAUDE.md, settings, hooks, commands, skills) |
-| Claude hooks | None | 5 hooks (memory sync, jj describe, session start, trunk block) |
-| Claude memory | File-based (this repo) | Separate git repo with auto-push/pull |
-| MCP servers | Gmail, Calendar, Drive, Todoist | Home Assistant, Obsidian, sequential-thinking |
-| Mise tools | node LTS, python 3.12 | node, python, go, rust, zig, neovim, chezmoi + 10 aqua tools |
-| Tmux | None | Full config (catppuccin, session resurrection, floating panes) |
-| Fuzzy finder | fzf + atuin | fzf + television + atuin |
-| Shell completion | zsh native + fzf-tab | zsh native + fzf-tab + carapace |
-| Command correction | None | pay-respects (thefuck alternative) |
-| Cheatsheets | None | Navi integration, Ctrl+\ bound |
-| Voice input | MacroWhisper | None tracked |
-| chezmoidata | Not used | `claude.toml`, `constants.toml`, `pnpm-globals.yaml`, `skills.yaml` |
+| Area | You | Drew |
+|------|-----|------|
+| **Shell framework** | Oh My Zsh + Zinit (loaded after OMZ) | Oh My Zsh + Zinit (loaded before OMZ; OMZ just for compinit) |
+| **Shell plugins** | git (omz), fzf-tab, zsh-autosuggestions, zsh-syntax-highlighting | fzf-tab, zsh-syntax-highlighting only |
+| **Completions** | fzf-tab | fzf-tab + carapace (bridges zsh/fish/bash/inshellisense) |
+| **Fuzzy finder** | fzf only | fzf (backend) + television (UI, Ctrl+T) with channels |
+| **History** | atuin (Ctrl+R) | atuin (Ctrl+R + up-arrow) |
+| **Primary VCS** | git only | git + jj (Jujutsu) |
+| **Git diffs** | Basic | delta as pager/diff formatter everywhere |
+| **Git config location** | `~/.gitconfig` (top-level tmpl) | `~/.config/git/config` (XDG) |
+| **Terminal** | Not in dotfiles | Ghostty (managed) + iTerm2 (cask) |
+| **Editor** | nvim (brew) | nvim via mise (LazyVim full config) |
+| **Window manager** | Rectangle Pro | AeroSpace (tiling) + Rectangle Pro + JankyBorders |
+| **Tmux** | Not in dotfiles | Full TPM stack (sessionx, floax, catppuccin, resurrect, thumbs) |
+| **Secret management** | 1Password only | 1Password + fnox shell integration |
+| **Commit signing** | Not configured | SSH signing via jj (personal machines) |
+| **Chezmoi scripts** | 5 scripts | 15+ scripts across common/darwin/linux/windows |
+| **Chezmoi templates** | None | `path-functions`, `shell-config-functions`, `tool-functions` |
+| **Cross-platform** | macOS only | macOS + Linux (WSL2) + Windows |
+| **Leaderkey `t`** | Opens Terminal.app | Opens Ghostty |
+| **Leaderkey window mgmt** | Via Raycast extensions | Via Rectangle Pro URL scheme (no Raycast dependency) |
+| **Memory system** | MEMORY.md index + topic files | Same + symlinked via chezmoi templates |
+| **Claude plugin count** | 1 (skill-creator) | 15+ across dev/personal/common |
+| **CCStatusLine** | Custom bash script | `bun x -y ccstatusline@latest` |
 
 ---
 
-## Section 4: Suggested Adoptions (Ranked)
+## Section 4: Suggested Adoptions (Ranked by Impact)
 
-### 1. Track Claude Code in chezmoi (hooks + CLAUDE.md + settings)
+### 1. **television** (tv) — context-aware fuzzy finder
 
-Drew's setup auto-syncs a `~/.claude/memory` git repo on every session start/end, auto-updates jj revision descriptions as Claude edits files, blocks dangerous commands, and checks branch staleness at session start. Your Claude config lives outside chezmoi entirely. This is the single highest-leverage adoption — it makes Claude dramatically more useful across machines and over time.
+Replace raw fzf Ctrl+T with `television`, which picks the right channel based on context (e.g., `git checkout` → branch picker, `cd` → directory picker). Drew's cable channels add atuin-history, chezmoi files, obsidian notes, mise tools, and recent files. Zero muscle-memory change, immediate productivity win.
 
-**Key files:** `dot_claude/CLAUDE.md.tmpl`, `dot_claude/settings.json.tmpl`, all 5 hooks in `dot_claude/hooks/`
+**What to add:** `"aqua:alexpasmantier/television" = "latest"` in mise; copy `dot_config/television/` and `dot_config/television/cable/`; add `eval "$(tv init zsh)"` to `shell/020-shell-tools.sh`
 
-### 2. Delta git diff pager
+### 2. **tmux plugin stack** (sessionx + floax + resurrect)
 
-One-line change to `.gitconfig` — add `[pager] diff = delta` and configure side-by-side mode. Every `git diff`, `git log -p`, and `git show` becomes dramatically more readable. Delta integrates with bat for syntax highlighting.
+`tmux-sessionx` (prefix+o) turns tmux into a project switcher with live previews. `tmux-floax` (prefix+p) gives a floating scratchpad without losing context. `tmux-resurrect` + `tmux-continuum` persist sessions across reboots. Drew's `025-tmux.sh` shell helpers make all of this approachable.
 
-**Key file:** `dot_config/git/config.tmpl` `[pager]` + `[delta]` sections
+**What to add:** Copy `dot_config/tmux/tmux.conf` + `tmux.reset.conf`; copy `shell/025-tmux.sh.tmpl`
 
-### 3. AeroSpace tiling window manager
+### 3. **jj (Jujutsu)** — better VCS workflow
 
-Replaces the manual Rectangle Pro window snapping with an i3-inspired tiling WM. Named workspaces (B=Browser, D=Dev, T=Terminal, etc.) with app auto-assignment means your desktop is always organized without thinking. Alt+hjkl to move focus; Alt+Shift+hjkl to move windows. Drew's config is directly adoptable as a starting point.
+Works alongside git (no migration). Key wins: operation log + `op undo` (undo anything including bad rebases), `wip()` revset (private commits that never push accidentally), `tug` alias for moving bookmarks. Drew's config is mature with delta diffs, SSH signing, and a full alias set.
 
-**Key file:** `dot_config/aerospace/aerospace.toml`
+**What to add:** `dot_config/jj/config.toml.tmpl`; `"aqua:jj-vcs/jj" = "latest"` in mise
 
-### 4. Jujutsu (jj) VCS
+### 4. **Richer Claude Code hooks + plugins**
 
-Drew runs jj on top of his existing git repos — it's a drop-in layer, not a migration. No staging area, automatic working-copy commits, first-class undo, and revsets for querying history. The Claude hook that auto-describes jj revisions as Claude edits files is uniquely powerful with jj.
+Drew's hooks block dangerous commands pre-Bash, scan for secrets pre-edit, run cleanup on Stop, and send notifications. The plugins he enables (code-review, feature-dev, typescript-lsp, playwright, commit-commands, context7, superpowers) add concrete workflows for daily dev. Low friction to adopt — just update `settings.json.tmpl`.
 
-**Key file:** `dot_config/jj/config.toml.tmpl`
+**What to add:** Expand permissions + hooks in `dot_claude/settings.json.tmpl`; update `enabledPlugins`; copy `hooks/block-secrets.py`, `hooks/block-dangerous-commands.sh`, `hooks/end-of-turn.sh`, `hooks/notify.sh`
 
-### 5. Atuin secrets filtering + daemon mode
+### 5. **Chezmoi install scripts** (install-claude-code + pnpm-globals + configure-shell-tools)
 
-A 5-line addition to your existing `atuin/config.toml`: add regex filters to strip AWS keys, GitHub tokens, and `.env` values from history before they're synced. Daemon mode improves startup latency. Since you already use atuin, this is zero friction.
+`run_onchange_after_40-install-claude-code` keeps Claude Code CLI current automatically. `run_onchange_after_15-pnpm-globals` makes pnpm globals declarative from a YAML file. `run_onchange_after_20-configure-shell-tools` auto-generates completions and gh aliases. Together these make `chezmoi apply` fully self-contained on a fresh machine.
 
-**Key file:** `dot_config/atuin/config.toml.tmpl` — add `secrets_filter`, `daemon.enabled`, `filter_mode`
+**What to add:** Copy these three scripts to `.chezmoiscripts/common/`; add `pnpm-globals.yaml` to `.chezmoidata/`
