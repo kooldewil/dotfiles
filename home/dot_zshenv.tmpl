@@ -22,6 +22,20 @@ export LESS=FRX
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# XDG-aware tool redirects — keep $HOME clean
+export CARGO_HOME="${XDG_DATA_HOME}/cargo"
+export RUSTUP_HOME="${XDG_DATA_HOME}/rustup"
+export DOCKER_CONFIG="${XDG_CONFIG_HOME}/docker"
+export GNUPGHOME="${XDG_DATA_HOME}/gnupg"
+export LESSHISTFILE="${XDG_STATE_HOME}/less/history"
+export NPM_CONFIG_USERCONFIG="${XDG_CONFIG_HOME}/npm/npmrc"
+export PYTHON_HISTORY="${XDG_STATE_HOME}/python_history"
+export RIPGREP_CONFIG_PATH="${XDG_CONFIG_HOME}/ripgrep/config"
+
+# Cargo and Go bins (tools installed outside mise)
+[[ -d "${CARGO_HOME}/bin" ]] && path=("${CARGO_HOME}/bin" ${path:#${CARGO_HOME}/bin})
+[[ -d "$HOME/go/bin" ]] && path=("$HOME/go/bin" ${path:#$HOME/go/bin})
+
 {{- if eq .chezmoi.os "darwin" }}
 # 1Password SSH Agent (skip when SSH'd — biometric unavailable)
 if [[ -z "$SSH_CONNECTION" ]]; then
