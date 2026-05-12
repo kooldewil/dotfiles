@@ -6,7 +6,7 @@
 [tools]
 # Language runtimes
 node = "lts"
-"npm:pnpm" = "latest"
+pnpm = "latest"
 deno = "latest"
 bun = "latest"
 python = "latest"
@@ -47,15 +47,18 @@ chezmoi = "latest"
 atuin = "latest"
 "aqua:carapace-sh/carapace-bin" = "latest"
 
-{{- if ne .chezmoi.os "windows" }}
-# macOS/Linux only (cargo builds)
+{{ if eq .chezmoi.os "windows" -}}
+# Windows: use github backend (cargo needs MSVC toolchain)
+"github:iffse/pay-respects" = "latest"
+"github:eza-community/eza" = "latest"
+{{ else -}}
 "cargo:pay-respects" = "latest"
 "cargo:tokei" = "latest"
 eza = "latest"
 
 # Unix-only (no Windows binary)
 "aqua:PaulJuliusMartinez/jless" = "latest"
-{{- end }}
+{{ end -}}
 {{- if .personal }}
 
 # Personal-only tools
@@ -66,7 +69,6 @@ yt-dlp = "latest"
 [settings]
 experimental = true
 activate_aggressive = true
-legacy_version_file = true
 idiomatic_version_file_enable_tools = ['node', 'pnpm']
 
 [settings.node]
