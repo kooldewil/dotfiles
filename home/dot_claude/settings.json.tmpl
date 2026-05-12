@@ -1,0 +1,77 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(brew :*)",
+      "Bash(cargo :*)",
+      "Bash(go :*)",
+      "Bash(git :*)",
+      "Bash(gh :*)",
+      "Bash(docker :*)",
+      "Bash(rg :*)",
+      "Bash(ripgrep :*)",
+      "Bash(fd :*)",
+      "Bash(fzf :*)",
+      "Bash(bat :*)",
+      "Bash(eza :*)",
+      "Bash(jq :*)",
+      "Bash(yq :*)",
+      "Bash(chezmoi :*)",
+      "Bash(mise :*)",
+      "Bash(npx :*)",
+      "Bash(mkdir -p /tmp/claude-scratch*)",
+      "Bash(touch /tmp/claude-*)",
+      "Bash(cat /tmp/claude-*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(dd if=/dev/zero of=/dev/*)",
+      "Bash(mkfs.:*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/secrets/**)",
+      "Write(**/.env)",
+      "Write(**/.env.*)",
+      "Bash(git push:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/memory-pull.sh\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-start-git-status.sh\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/memory-push.sh\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true
+  }
+}

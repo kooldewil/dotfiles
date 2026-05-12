@@ -1,0 +1,50 @@
+{
+  "skill_name": "dotfiles-compare",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "can you look at drews dotfiles and compare them with mine",
+      "expected_output": "A COMPARISON-Drewtopia.md file written to the chezmoi root with at least 4 sections: things Drew has that the user doesn't, things the user has Drew doesn't, structural differences table, and suggested adoptions. The file should include specific tools like jj, delta, AeroSpace, Ghostty, and neovim config on the Drew side; MacroWhisper and zsh-autosuggestions on the user side.",
+      "files": [],
+      "expectations": [
+        "A COMPARISON-Drewtopia.md file is written to the chezmoi source root",
+        "The file contains a section about tools/configs Drew has that the user doesn't",
+        "The file contains a section about tools/configs the user has that Drew doesn't",
+        "The file contains a structural differences table",
+        "The file contains suggested adoptions",
+        "Jujutsu (jj) is mentioned as something Drew has",
+        "AeroSpace or a tiling WM is mentioned as something Drew has",
+        "MacroWhisper is mentioned as something the user has"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "compare my dotfiles with mathiasbynens - https://github.com/mathiasbynens/dotfiles",
+      "expected_output": "A COMPARISON-mathiasbynens.md file written to the chezmoi root. Since mathiasbynens/dotfiles is a classic non-chezmoi bash-based dotfiles repo, the comparison should reflect the structural difference (no chezmoi, no mise, older-style setup). Should note his .macos script for system defaults. Suggested adoptions should be realistic given the style gap.",
+      "files": [],
+      "expectations": [
+        "A COMPARISON-mathiasbynens.md file is written to the chezmoi source root",
+        "The file contains a section about tools mathiasbynens has that the user doesn't",
+        "The file contains a section about tools the user has that mathiasbynens doesn't",
+        "The file contains a structural differences table",
+        "The file contains suggested adoptions",
+        "The comparison correctly identifies that mathiasbynens does not use chezmoi",
+        "The .macos or macOS defaults script is mentioned"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "hey what does holman have in his dotfiles that I'm missing? https://github.com/holman/dotfiles",
+      "expected_output": "A COMPARISON-holman.md file written to the chezmoi root. holman/dotfiles is a well-known topic-based dotfiles repo (zsh, git, ruby, etc.) that predates chezmoi and mise. The comparison should correctly identify the structural differences and not confuse holman's topic-directory layout with chezmoi conventions.",
+      "files": [],
+      "expectations": [
+        "A COMPARISON-holman.md file is written to the chezmoi source root",
+        "The file correctly identifies holman's topic-based directory organization",
+        "The file contains a section about things holman has that the user doesn't",
+        "The file contains a section about things the user has that holman doesn't",
+        "The file contains a structural differences table",
+        "The user having chezmoi and mise is noted as a structural advantage"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+# Agent skills installed via the `npx skills` CLI.
+# Consumed by run_onchange_after_60-install-skills.sh.tmpl — when this
+# file changes, the install script re-runs.
+skill_repos:
+  - repo: mattpocock/skills
+    skills:
+      # productivity/
+      - grill-me
+      - write-a-skill
+      # engineering/
+      - diagnose
+      - grill-with-docs
+      - improve-codebase-architecture
+      - prototype
+      - setup-matt-pocock-skills
+      - tdd
+      - to-issues
+      - to-prd
+      - triage
+      - zoom-out
+      # misc/
+      - git-guardrails-claude-code
+      - migrate-to-shoehorn
+  - repo: vercel-labs/skills
+    skills:
+      - find-skills
+  - repo: github/awesome-copilot
+    skills:
+      - conventional-commit
+  - repo: pproenca/dot-skills
+    skills:
+      - zod

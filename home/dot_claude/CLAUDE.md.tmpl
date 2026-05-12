@@ -1,0 +1,66 @@
+# Global CLAUDE.md
+
+This file applies to ALL projects. Identity, security rules, and memory rules defined once here.
+
+## Identity & Accounts
+
+- **GitHub**: {{ .github.username }} (SSH: `git@github.com:{{ .github.username }}/<repo>.git`)
+- **Version Control**: git
+- **Package Managers**:
+  - macOS: Homebrew (`brew`), mise
+  - Windows: Scoop (`scoop`), mise
+  - All platforms: mise for runtime management
+
+---
+
+## NEVER EVER DO (Security Gatekeeper)
+
+These rules are **ABSOLUTE**. No exceptions.
+
+### NEVER Publish Sensitive Data
+- NEVER commit passwords, API keys, tokens to git/npm/docker
+- NEVER hardcode credentials in source files
+- NEVER include secrets in error messages or logs
+
+### NEVER Commit .env Files
+- NEVER commit `.env` to git
+- ALWAYS verify `.env` is in `.gitignore`
+- ALWAYS use `.env.example` with placeholder values
+
+### NEVER Skip Verification
+- Before ANY commit: verify no secrets included
+- Before ANY push: check staged files for sensitive data
+- Before ANY publish: audit package contents
+
+---
+
+## Memory
+
+Two systems load context at session start:
+
+- `@~/.claude/memory/memory.md` — index of accumulated knowledge. Load specific topic files only when relevant.
+- Topic files: `personal.md`, `projects.md`, `tools.md`, `general.md`
+
+Maintaining memory:
+
+- When you learn something worth remembering, write to the right topic file immediately. Keep `memory.md` current as an index.
+- Entries: date, what, why — nothing more.
+- Before removing or modifying any existing memory entry, use AskUserQuestion to confirm.
+
+---
+
+## Project MEMORY.md
+
+When working in a project, ensure its MEMORY.md begins with this pointer block:
+
+```
+## Global Memory
+
+Read ~/.claude/CLAUDE.md for memory rules and topic files.
+```
+
+Project MEMORY.md has a 200-line budget — auto-memory loads only the first 200 lines at session start.
+
+---
+
+*Last updated: {{ now | date "2006-01-02" }}*

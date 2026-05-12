@@ -1,0 +1,29 @@
+{{- if ne .chezmoi.os "windows" -}}
+{{- if .dev_computer -}}
+#!/usr/bin/env bash
+# Reconcile agent skills against .chezmoidata/skills.yaml via `npx skills`.
+# Inlining the desired skills below makes run_onchange retrigger when the
+# YAML changes:
+{{- range .skill_repos }}
+# {{ .repo }}:
+{{- range .skills }}
+#   {{ . }}
+{{- end }}
+{{- end }}
+
+set -euo pipefail
+
+if ! command -v npx >/dev/null 2>&1; then
+    echo "[skills] npx not on PATH; skipping"
+    exit 0
+fi
+
+{{- range .skill_repos }}
+echo "[skills] {{ .repo }}: {{ .skills | join ", " }}"
+npx -y skills add {{ .repo }} -g -y --skill {{ .skills | join " " }}
+{{- end }}
+
+# Sweep up empty skill directories left behind during repo discovery.
+find "$HOME/.claude/skills" -mindepth 1 -maxdepth 1 -type d -empty -delete 2>/dev/null || true
+{{- end }}
+{{- end }}

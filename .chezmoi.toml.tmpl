@@ -1,12 +1,166 @@
-{{- $name := "Shaunak Tavargeri" -}}
-{{- $email := "shaunakt@gmail.com" -}}
+{{- $name := "" -}}
+
+{{/* dev_computer: prompted once per machine, cached in chezmoi config */}}
+{{- $dev_computer := promptBoolOnce . "dev_computer" "Install dev tools on this machine?" -}}
+
+{{/* Boolean feature tags */}}
 {{- $ephemeral := false -}}
-{{- $personal := true -}}
-{{- $dev_computer := true -}}
+{{- $work      := false -}}
+{{- $is_wsl    := false -}}
+{{- $personal  := false -}}
+{{- $email     := "" -}}
+
+{{/* OS detection */}}
+{{- $osID := .chezmoi.os -}}
+{{- if (and (eq .chezmoi.os "linux") (hasKey .chezmoi.osRelease "id")) -}}
+{{-   $osID = printf "%s-%s" .chezmoi.os .chezmoi.osRelease.id -}}
+{{- end -}}
+
+{{/* Ephemeral environment detection (cloud, containers, VMs) */}}
+{{- if or (env "CODESPACES") (env "REMOTE_CONTAINERS_IPC") (eq .chezmoi.username "root" "ubuntu" "vagrant" "vscode") -}}
+{{-   $ephemeral = true -}}
+{{- end -}}
+
+{{/* WSL detection */}}
+{{- if eq .chezmoi.os "linux" -}}
+{{-   if (.chezmoi.kernel.osrelease | lower | contains "microsoft") -}}
+{{-     $is_wsl = true -}}
+{{-   end -}}
+{{- end -}}
+
+{{/* Reliable hostname — macOS scutil is more stable than kernel hostname */}}
+{{- $hostname := .chezmoi.hostname -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $hostname = output "scutil" "--get" "LocalHostName" | trim | lower -}}
+{{- end -}}
+
+{{/* ── Machine identity ──────────────────────────────────────────────────
+     Personal machines: Mac Mini, MacBook Pro (macOS); Legion Go, Gaming PC (Windows)
+     Work machines:     Work Windows laptop
+     TODO: Replace placeholder hostnames with real values.
+       macOS:   run `scutil --get LocalHostName`
+       Windows: run `hostname`                                           */}}
+{{- $personalMacHosts     := list "shauns-m4-mac-mini" "TODO-macbook-pro" -}}
+{{- $personalWindowsHosts := list "TODO-legion-go" "TODO-gaming-pc" -}}
+{{- $workWindowsHosts     := list "TODO-work-laptop" -}}
+
+{{/* macOS identity detection */}}
+{{- if and (not $ephemeral) (eq .chezmoi.os "darwin") -}}
+{{-   if has $hostname $personalMacHosts -}}
+{{-     $personal = true -}}
+{{-   else if or (stdinIsATTY) (hasKey . "ephemeral") -}}
+{{-     $ephemeral = promptBoolOnce . "ephemeral" "Is this an ephemeral machine (no secrets)?" -}}
+{{-     if not $ephemeral -}}
+{{-       $personal = promptBoolOnce . "personal" "Is this your personal machine?" -}}
+{{-       if not $personal -}}
+{{-         $work = true -}}
+{{-       end -}}
+{{-     end -}}
+{{-   else -}}
+{{-     $ephemeral = true -}}
+{{-   end -}}
+{{- end -}}
+
+{{/* Windows identity detection */}}
+{{- if and (not $ephemeral) (eq .chezmoi.os "windows") -}}
+{{-   if has ($hostname | lower) $personalWindowsHosts -}}
+{{-     $personal = true -}}
+{{-   else if has ($hostname | lower) $workWindowsHosts -}}
+{{-     $work = true -}}
+{{-   else if or (stdinIsATTY) (hasKey . "ephemeral") -}}
+{{-     $ephemeral = promptBoolOnce . "ephemeral" "Is this an ephemeral machine (no secrets)?" -}}
+{{-     if not $ephemeral -}}
+{{-       $personal = promptBoolOnce . "personal" "Is this your personal machine?" -}}
+{{-       if not $personal -}}
+{{-         $work = true -}}
+{{-       end -}}
+{{-     end -}}
+{{-   else -}}
+{{-     $ephemeral = true -}}
+{{-   end -}}
+{{- end -}}
+
+{{/* ── 1Password identity ─────────────────────────────────────────────
+     Single vault with two items:
+       Personal: "Personal Identity" — fields: full name, email
+       Work:     "Work Identity"     — fields: full name, email
+     Adjust item/field names to match your 1Password setup.
+     Vault name: change "Personal" if your vault has a different name. */}}
+{{- if and (not $ephemeral) (or $personal $work) -}}
+{{-   if $personal -}}
+{{-     $name  = onepasswordRead "op://Personal/Personal Identity/full name" | trim -}}
+{{-     $email = onepasswordRead "op://Personal/Personal Identity/email" | trim -}}
+{{-   else -}}
+{{-     $name  = onepasswordRead "op://Personal/Work Identity/full name" | trim -}}
+{{-     $email = onepasswordRead "op://Personal/Work Identity/email" | trim -}}
+{{-   end -}}
+{{- end -}}
+
+{{/* ── Work Windows tools root ────────────────────────────────────────
+     On work Windows machines, IT may restrict installs under $HOME.
+     Prompt for a top-level folder (e.g. "dev") → tools install at
+     C:/<folder>/<username> instead of C:/Users/<username>.           */}}
+{{- $tools_root := .chezmoi.homeDir -}}
+{{- if and $work (eq .chezmoi.os "windows") -}}
+{{-   $dev_folder := promptStringOnce . "dev_folder" "Top-level folder for dev tools (e.g. 'dev' → C:/dev/<user>; blank for $HOME)" -}}
+{{-   if $dev_folder -}}
+{{-     $tools_root = printf "C:/%s/%s" $dev_folder (last (splitList "\\" (.chezmoi.username | lower))) -}}
+{{-   end -}}
+{{- end -}}
+{{- $dev_root   := printf "%s/dev"               $tools_root -}}
+{{- $mise_dir   := printf "%s/.mise"             $tools_root -}}
+{{- $claude_dir := printf "%s/.claude"           $tools_root -}}
+{{- $pnpm_home  := printf "%s/.local/share/pnpm" $tools_root -}}
+
+# Make mise-managed tools visible to chezmoi templates (lookPath, etc.)
+[env]
+{{- if eq .chezmoi.os "windows" }}
+    PATH = '{{ $mise_dir }}/shims;{{ env "PATH" }}'
+{{- else }}
+    PATH = "{{ $mise_dir }}/shims:{{ env "PATH" }}"
+{{- end }}
 
 [data]
-  name = {{ $name | quote }}
-  email = {{ $email | quote }}
-  ephemeral = {{ $ephemeral }}
-  personal = {{ $personal }}
+  ephemeral    = {{ $ephemeral }}
+  name         = {{ $name | quote }}
+  email        = {{ $email | quote }}
+  work         = {{ $work }}
+  is_wsl       = {{ $is_wsl }}
   dev_computer = {{ $dev_computer }}
+  hostname     = {{ $hostname | quote }}
+  personal     = {{ $personal }}
+  osid         = {{ $osID | quote }}
+
+  [data.directories]
+    tools_root     = "{{ $tools_root }}"
+    dev_root       = "{{ $dev_root }}"
+    claude_dir     = "{{ $claude_dir }}"
+    pnpm_home      = "{{ $pnpm_home }}"
+    mise_dir       = "{{ $mise_dir }}"
+    repos_dir      = "{{ $tools_root }}/repos"
+    user_bin_dir   = "{{ $tools_root }}/bin"
+    xdg_cache_dir  = "{{ $tools_root }}/.cache"
+    xdg_config_dir = "{{ .chezmoi.homeDir }}/.config"
+    xdg_data_dir   = "{{ .chezmoi.homeDir }}/.local/share"
+    xdg_state_dir  = "{{ .chezmoi.homeDir }}/.local/state"
+
+[github]
+    refreshPeriod = "12h"
+
+[git]
+    autoCommit = true
+    commitMessageTemplate = {{ printf "%q" "{{ promptString `Commit message` }}" }}
+
+{{- if and $dev_computer (ne .chezmoi.os "windows") }}
+[diff]
+    pager = "delta"
+{{- end }}
+
+{{ if eq .chezmoi.os "windows" -}}
+[cd]
+    command = "pwsh"
+
+[interpreters.ps1]
+    command = "powershell.exe"
+    args = ["-NoLogo", "-NoProfile"]
+{{- end }}
