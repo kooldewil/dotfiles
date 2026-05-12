@@ -7,6 +7,10 @@
 [scoop]
 buckets = ["extras", "nerd-fonts"]
 
+[scoop.work]
+buckets  = []
+packages = []
+
 # Bootstrap (must be in Scoop — available before mise runs)
 # GUI apps and Windows-native tools without mise equivalents
 packages = [
