@@ -189,5 +189,5 @@
 # pwsh before it exists on a fresh machine
 [interpreters.ps1]
     command = "powershell.exe"
-    args = ["-NoLogo", "-NoProfile"]
+    args = ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass"]
 {{- end }}

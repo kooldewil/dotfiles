@@ -5,9 +5,9 @@
 $ErrorActionPreference = "Stop"
 
 function Write-Status($msg) { Write-Host "  $msg" -ForegroundColor Cyan }
-function Write-Ok($msg)     { Write-Host "  ✅ $msg" -ForegroundColor Green }
-function Write-Warn($msg)   { Write-Host "  ⚠️  $msg" -ForegroundColor Yellow }
-function Write-Fail($msg)   { Write-Host "  ❌ $msg" -ForegroundColor Red }
+function Write-Ok($msg)     { Write-Host "  [OK] $msg" -ForegroundColor Green }
+function Write-Warn($msg)   { Write-Host "  [WARN] $msg" -ForegroundColor Yellow }
+function Write-Fail($msg)   { Write-Host "  [ERR] $msg" -ForegroundColor Red }
 
 # ── Install Scoop ────────────────────────────────────────────────────────────
 
@@ -99,5 +99,5 @@ if ($errors.Count -gt 0) {
 }
 
 Write-Host ""
-Write-Host "🎉 Scoop setup complete" -ForegroundColor Green
+Write-Host "Scoop setup complete" -ForegroundColor Green
 {{- end }}
