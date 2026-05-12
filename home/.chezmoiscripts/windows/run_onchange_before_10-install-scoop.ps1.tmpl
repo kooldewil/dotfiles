@@ -19,7 +19,6 @@ if ($ExecutionContext.SessionState.LanguageMode -ne 'FullLanguage') {
 
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Write-Status "Installing Scoop..."
-    try { Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force } catch {}
     Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
     Write-Ok "Scoop installed"
 } else {
