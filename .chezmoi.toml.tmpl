@@ -40,9 +40,11 @@
      TODO: Replace placeholder hostnames with real values.
        macOS:   run `scutil --get LocalHostName`
        Windows: run `hostname`                                           */}}
+{{/* Personal machine hostnames only — work machines fall through to prompt.
+     TODO: add remaining hostnames once known (run `scutil --get LocalHostName`
+     on macOS, `hostname` on Windows). */}}
 {{- $personalMacHosts     := list "shauns-m4-mac-mini" "TODO-macbook-pro" -}}
 {{- $personalWindowsHosts := list "TODO-legion-go" "TODO-gaming-pc" -}}
-{{- $workWindowsHosts     := list "TODO-work-laptop" -}}
 
 {{/* macOS identity detection */}}
 {{- if and (not $ephemeral) (eq .chezmoi.os "darwin") -}}
@@ -65,8 +67,6 @@
 {{- if and (not $ephemeral) (eq .chezmoi.os "windows") -}}
 {{-   if has ($hostname | lower) $personalWindowsHosts -}}
 {{-     $personal = true -}}
-{{-   else if has ($hostname | lower) $workWindowsHosts -}}
-{{-     $work = true -}}
 {{-   else if or (stdinIsATTY) (hasKey . "ephemeral") -}}
 {{-     $ephemeral = promptBoolOnce . "ephemeral" "Is this an ephemeral machine (no secrets)?" -}}
 {{-     if not $ephemeral -}}
