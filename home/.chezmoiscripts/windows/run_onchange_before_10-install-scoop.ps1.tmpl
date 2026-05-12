@@ -13,7 +13,7 @@ function Write-Fail($msg)   { Write-Host "  [ERR] $msg" -ForegroundColor Red }
 
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Write-Status "Installing Scoop..."
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction SilentlyContinue
     Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
     Write-Ok "Scoop installed"
 } else {
