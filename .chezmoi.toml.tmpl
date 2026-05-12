@@ -151,10 +151,6 @@
 [github]
     refreshPeriod = "12h"
 
-[git]
-    autoCommit = true
-    commitMessageTemplate = {{ printf "%q" "{{ promptString `Commit message` }}" }}
-
 {{- if and $dev_computer (ne .chezmoi.os "windows") }}
 [diff]
     pager = "delta"

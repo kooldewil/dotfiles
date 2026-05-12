@@ -1,6 +1,6 @@
 [user]
-	name = {{ .name }}
-	email = {{ .email }}
+	name = {{ .name | default "" }}
+	email = {{ .email | default "" }}
 
 [core]
 	editor = nano
