@@ -1,6 +1,7 @@
 # External Dependencies
 # Managed by chezmoi - automatically downloaded/updated
 
+{{ if eq .chezmoi.os "darwin" -}}
 # Oh My Zsh framework
 [".oh-my-zsh"]
   type = "archive"
@@ -22,3 +23,14 @@
   type = "git-repo"
   url = "https://github.com/zdharma-continuum/zinit.git"
   refreshPeriod = "168h"
+{{ end -}}
+
+# Claude Code hooks from TheDecipherist/claude-code-mastery
+{{ $hookBase := "https://raw.githubusercontent.com/TheDecipherist/claude-code-mastery/main/hooks" -}}
+{{ range (list "after-edit.sh" "block-dangerous-commands.sh" "block-secrets.py" "end-of-turn.sh" "notify.sh") }}
+[".claude/hooks/{{ . }}"]
+  type = "file"
+  url = "{{ $hookBase }}/{{ . }}"
+  refreshPeriod = "168h"
+  executable = true
+{{ end -}}

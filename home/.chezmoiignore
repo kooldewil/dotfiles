@@ -8,6 +8,24 @@
 .local/share/zinit/**/*.zwc
 .local/share/zinit/**/zcompdump*
 
+# chezmoi source data directory — do not copy to home
+.chezmoidata/
+
+# Claude Code — manage specific files only, not the whole directory
+.claude/*
+!.claude/settings.json
+!.claude/commands/
+!.claude/agents/
+!.claude/hooks/
+!.claude/skills/
+!.claude/memory
+!.claude/rules
+!.claude/mcp.json
+!.claude/CLAUDE.md
+
+# README lives in the repo, not in $HOME
+README.md
+
 {{ if ne .chezmoi.os "darwin" }}
 # macOS-only — skip on non-macOS
 .zshrc
@@ -20,7 +38,16 @@
 Library
 {{ end }}
 
-{{ if ne .chezmoi.os "windows" }}
-# Windows-only — skip on non-Windows
-# (none yet)
+{{ if eq .chezmoi.os "windows" }}
+# Shell scripts don't run on Windows — skip all POSIX scripts
+.chezmoiscripts/**/*.sh
+.chezmoiscripts/**/*.sh.tmpl
+# POSIX shell config doesn't apply on Windows
+.config/shell
+.config/shell/**
+.config/shell-loader.sh
+.oh-my-zsh
+.p10k.zsh
+.zshrc
+.zprofile
 {{ end }}

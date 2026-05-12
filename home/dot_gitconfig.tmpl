@@ -1,11 +1,21 @@
 [user]
 	name = {{ .name | default "" }}
 	email = {{ .email | default "" }}
+{{- if .personal }}
+	signingkey = ssh-ed25519 PLACEHOLDER
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
+{{- end }}
 
 [core]
 	editor = nano
-	autocrlf = input
+	autocrlf = {{ if eq .chezmoi.os "windows" }}true{{ else }}input{{ end }}
 	excludesfile = ~/.gitignore_global
+{{- if lookPath "delta" }}
+	pager = delta
+{{- end }}
 
 [init]
 	defaultBranch = main
@@ -68,6 +78,17 @@
 
 [diff]
 	tool = default-difftool
+{{- if lookPath "delta" }}
+
+[delta]
+	navigate = true
+	light = false
+	side-by-side = true
+	line-numbers = true
+
+[interactive]
+	diffFilter = delta --color-only
+{{- end }}
 
 [merge]
 	tool = default-mergetool
@@ -78,3 +99,13 @@
 
 [help]
 	autocorrect = 1
+
+{{- if lookPath "gh" }}
+[credential "https://github.com"]
+	helper = !gh auth git-credential
+{{- end }}
+
+{{ if eq .chezmoi.os "windows" -}}
+[credential]
+	helper = manager
+{{ end -}}
