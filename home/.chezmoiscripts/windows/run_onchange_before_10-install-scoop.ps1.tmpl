@@ -11,6 +11,12 @@ function Write-Fail($msg)   { Write-Host "  [ERR] $msg" -ForegroundColor Red }
 
 # -- Install Scoop ------------------------------------------------------------
 
+if ($ExecutionContext.SessionState.LanguageMode -ne 'FullLanguage') {
+    Write-Warn "PowerShell is in $($ExecutionContext.SessionState.LanguageMode) — Scoop requires FullLanguage mode."
+    Write-Warn "Install tools manually via winget or contact IT. Skipping Scoop setup."
+    exit 0
+}
+
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Write-Status "Installing Scoop..."
     try { Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force } catch {}
