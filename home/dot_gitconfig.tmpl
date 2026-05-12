@@ -1,17 +1,16 @@
 [user]
 	name = {{ get . "name" | default "" }}
 	email = {{ get . "email" | default "" }}
-{{- if .personal }}
-	signingkey = ssh-ed25519 PLACEHOLDER
-[gpg]
-	format = ssh
-[commit]
-	gpgsign = true
-{{- end }}
+
+[advice]
+	addEmptyPathspec = false
+	pushNonFastForward = false
+	statusHints = false
 
 [core]
-	editor = nano
+	editor = nvim
 	autocrlf = {{ if eq .chezmoi.os "windows" }}true{{ else }}input{{ end }}
+	whitespace = trailing-space,space-before-tab
 	excludesfile = ~/.gitignore_global
 {{- if lookPath "delta" }}
 	pager = delta
@@ -20,92 +19,190 @@
 [init]
 	defaultBranch = main
 
+[branch]
+	sort = -committerdate
+
+[column]
+	ui = auto
+
+[tag]
+	sort = version:refname
+
+[status]
+	submoduleSummary = true
+
 [pull]
-	rebase = false
+	rebase = true
 
 [push]
-	default = simple
+	default = current
 	autoSetupRemote = true
+
+[fetch]
+	all = true
+	prune = true
+
+[rebase]
+	autoSquash = true
+	autoStash = true
+	updateRefs = true
+
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	renames = true
+
+[merge]
+	conflictStyle = zdiff3
+	tool = nvimdiff
+
+[mergetool]
+	keepBackup = false
+	prompt = false
+
+[mergetool "nvimdiff"]
+	layout = "LOCAL,BASE,REMOTE / MERGED"
+
+[pager]
+	branch = false
+	grep = false
 
 [color]
 	ui = auto
 
-[color "branch"]
-	current = yellow reverse
-	local = yellow
-	remote = green
-
-[color "diff"]
-	meta = yellow bold
-	frag = magenta bold
-	old = red bold
-	new = green bold
-
-[color "status"]
-	added = green
-	changed = yellow
-	untracked = cyan
+[help]
+	autocorrect = 1
 
 [alias]
-	# Short status
-	s = status -sb
+	# Status
+	s  = status -sb
+	ss = "commit --message 'chore: snapshot' --no-gpg-sign"
 
-	# Add all
+	# Staging
+	a  = add
 	aa = add --all
+	ap = add -p
 
-	# Commit
-	c = commit
-	cm = commit -m
+	# Committing
+	c    = commit
+	cm   = commit -m
+	ca   = commit --amend
+	cane = commit --amend --no-edit
+	cf   = commit --fixup
 
-	# Pretty log
-	l = log --pretty=format:'%C(yellow)%h%C(reset) - %C(cyan)%an%C(reset), %C(green)%ar%C(reset) : %s'
+	# Branching
+	b   = branch
+	bm  = branch --merged
+	bnm = branch --no-merged
+	co  = checkout
+	cob = checkout -b
+
+	# Log
+	l  = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 	lg = log --graph --pretty=format:'%C(yellow)%h%C(reset) - %C(cyan)%an%C(reset), %C(green)%ar%C(reset) : %s' --abbrev-commit
+	ol = log --pretty=oneline
 
-	# Show branches
-	branches = branch -a
-
-	# Undo last commit
-	undo = reset HEAD~1 --mixed
-
-	# Amend last commit
-	amend = commit --amend --no-edit
-
-	# Show diff of last commit
+	# Diff
+	d   = diff --patience
+	dc  = diff --cached
+	wd  = diff --patience --word-diff
 	last = diff HEAD^
 
-	# Stash
+	# Remote
+	p   = push
+	pf  = push --force-with-lease
+	prb = pull --rebase
+	fo  = fetch origin
+
+	# Rebase
+	ra   = rebase --abort
+	rc   = rebase --continue
+	ri   = rebase --interactive
+
+	# Misc
+	r         = restore
+	rl        = reflog
+	undo      = reset HEAD~1 --mixed
 	stash-all = stash save --include-untracked
+	branches  = branch -a
 
-[diff]
-	tool = default-difftool
+	# Interactive fixup picker (requires fzf)
+	fu = "!git log -n 16 --pretty=format:'%h %s' --no-merges | fzf | cut -c -7 | xargs -o git commit --fixup"
+	sh = "!git log -n 16 --pretty=format:'%h %s' --no-merges | fzf | cut -c -7 | xargs -o git show"
+
+{{- /* gh credential helper: try lookPath, fall back to mise shim */ -}}
+{{- $ghPath := lookPath "gh" -}}
+{{- if not $ghPath -}}
+{{-   $shimPath := joinPath .chezmoi.homeDir ".local/share/mise/shims/gh" -}}
+{{-   if stat $shimPath -}}
+{{-     $ghPath = $shimPath -}}
+{{-   end -}}
+{{- end -}}
+{{- if $ghPath }}
+{{- $ghPath = $ghPath | replace "\\" "/" }}
+[credential "https://github.com"]
+	helper = !"{{ $ghPath }}" auth git-credential
+[credential "https://gist.github.com"]
+	helper = !"{{ $ghPath }}" auth git-credential
+{{- end }}
+
+{{- if eq .chezmoi.os "darwin" }}
+[credential]
+	helper = osxkeychain
+{{- end }}
+
+{{- if and .work .is_wsl }}
+[credential]
+	helper = /mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe
+[credential "https://dev.azure.com"]
+	useHttpPath = true
+{{- end }}
+
+{{- if and (eq .chezmoi.os "windows") (not .is_wsl) }}
+[credential]
+	helper =
+	helper = manager
+[credential "https://dev.azure.com"]
+	useHttpPath = true
+{{- end }}
+
+{{- if .personal }}
+[url "git@github.com:{{ .github.username }}/"]
+	insteadOf = https://github.com/{{ .github.username }}/
+
+[gpg]
+	format = ssh
+[user]
+	signingkey = ~/.ssh/id_ed25519.pub
+[commit]
+	gpgsign = true
+{{- end }}
+
 {{- if lookPath "delta" }}
-
 [delta]
 	navigate = true
-	light = false
-	side-by-side = true
+	syntax-theme = Monokai Extended
 	line-numbers = true
+	side-by-side = true
+	file-style = bold yellow ul
+	file-decoration-style = none
+	hunk-header-decoration-style = blue box
+	hunk-header-file-style = red
+	hunk-header-line-number-style = "#067a00"
+	hunk-header-style = file line-number syntax
+	line-numbers-left-style = cyan
+	line-numbers-right-style = cyan
+	line-numbers-minus-style = 124
+	line-numbers-plus-style = 28
+	line-numbers-zero-style = "#444444"
+	minus-style = syntax "#450a15"
+	minus-emph-style = syntax "#600818"
+	plus-style = syntax "#0e2f0e"
+	plus-emph-style = syntax "#174517"
+	whitespace-error-style = 22 reverse
 
 [interactive]
 	diffFilter = delta --color-only
 {{- end }}
 
-[merge]
-	tool = default-mergetool
-	conflictstyle = diff3
-
-[fetch]
-	prune = true
-
-[help]
-	autocorrect = 1
-
-{{- if lookPath "gh" }}
-[credential "https://github.com"]
-	helper = !gh auth git-credential
-{{- end }}
-
-{{ if eq .chezmoi.os "windows" -}}
-[credential]
-	helper = manager
-{{ end -}}
+{{/* vim: set filetype=gitconfig: */}}

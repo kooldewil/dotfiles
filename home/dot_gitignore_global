@@ -30,6 +30,18 @@ Temporary Items
 .vscode/
 .idea/
 
+# VCS
+.jj
+.pc
+.svn
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+# direnv
+.envrc
+
 # Environment files
 .env
 .env.local
