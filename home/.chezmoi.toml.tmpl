@@ -106,8 +106,8 @@
 {{- $email := "" -}}
 {{- if $opVault -}}
 {{-   if lookPath "op" -}}
-{{-     $name  = onepasswordRead (printf "op://Personal/%s/full name" $opVault) | trim -}}
-{{-     $email = onepasswordRead (printf "op://Personal/%s/email" $opVault) | trim -}}
+{{-     $name  = onepasswordRead (printf "op://Private/%s/first name" $opVault) | trim -}}
+{{-     $email      = onepasswordRead (printf "op://Private/%s/email" $opVault) | trim -}}
 {{-   else -}}
 {{-     $name  = promptStringOnce . "name"  "Your full name (op not installed; stored locally only)" -}}
 {{-     $email = promptStringOnce . "email" "Your email (op not installed; stored locally only)" -}}
