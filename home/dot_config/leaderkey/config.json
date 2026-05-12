@@ -234,10 +234,108 @@
           "value" : "cleanshot://open-history"
         },
         {
+          "actions" : [
+            {
+              "key" : "c",
+              "label" : "Capture Area with Timer",
+              "type" : "url",
+              "value" : "cleanshot://self-timer"
+            },
+            {
+              "key" : "k",
+              "label" : "Capture Area with Timer and Copy",
+              "type" : "url",
+              "value" : "cleanshot://self-timer?action=copy"
+            },
+            {
+              "key" : "p",
+              "label" : "Capture Area with Timer and Pin",
+              "type" : "url",
+              "value" : "cleanshot://self-timer?action=pin"
+            },
+            {
+              "key" : "s",
+              "label" : "Capture Area with Timer and Save",
+              "type" : "url",
+              "value" : "cleanshot://self-timer?action=save"
+            },
+            {
+              "key" : "t",
+              "label" : "Capture Area with Timer and Annotate",
+              "type" : "url",
+              "value" : "cleanshot://self-timer?action=annotate"
+            },
+            {
+              "key" : "u",
+              "label" : "Capture Area with Timer and Upload",
+              "type" : "url",
+              "value" : "cleanshot://self-timer?action=upload"
+            }
+          ],
+          "key" : "i",
+          "label" : "Capture Area with Timer",
+          "type" : "group"
+        },
+        {
+          "key" : "q",
+          "label" : "Quick Access",
+          "type" : "command",
+          "value" : "osascript -e 'tell application \"Finder\"\n    set selectedFile to selection as alias\n    set fileURL to URL of selectedFile\n    set cleanShotURL to \"cleanshot://add-quick-access-overlay?filepath=\" & (POSIX path of selectedFile)\n    open location cleanShotURL\nend tell'"
+        },
+        {
           "key" : "r",
           "label" : "Record Screen",
           "type" : "url",
           "value" : "cleanshot://record-screen"
+        },
+        {
+          "key" : "t",
+          "label" : "Open file with Annotate",
+          "type" : "command",
+          "value" : "osascript -e 'tell application \"Finder\"\n    set selectedFile to selection as alias\n    set fileURL to URL of selectedFile\n    set cleanShotURL to \"cleanshot://open-annotate?filepath=\" & (POSIX path of selectedFile)\n    open location cleanShotURL\nend tell'"
+        },
+        {
+          "actions" : [
+            {
+              "key" : "c",
+              "label" : "Capture Previous Area",
+              "type" : "url",
+              "value" : "cleanshot://capture-previous-area"
+            },
+            {
+              "key" : "k",
+              "label" : "Capture Previous Area and Copy",
+              "type" : "url",
+              "value" : "cleanshot://capture-previous-area?action=copy"
+            },
+            {
+              "key" : "p",
+              "label" : "Capture Previous Area and Pin",
+              "type" : "url",
+              "value" : "cleanshot://capture-previous-area?action=pin"
+            },
+            {
+              "key" : "s",
+              "label" : "Capture Previous Area and Save",
+              "type" : "url",
+              "value" : "cleanshot://capture-previous-area?action=save"
+            },
+            {
+              "key" : "t",
+              "label" : "Capture Previous Area and Annotate",
+              "type" : "url",
+              "value" : "cleanshot://capture-previous-area?action=annotate"
+            },
+            {
+              "key" : "u",
+              "label" : "Capture Previous Area and Upload",
+              "type" : "url",
+              "value" : "cleanshot://capture-previous-area?action=upload"
+            }
+          ],
+          "key" : "v",
+          "label" : "Capture Previous Area",
+          "type" : "group"
         },
         {
           "actions" : [
@@ -315,7 +413,7 @@
     {
       "key" : "t",
       "type" : "application",
-      "value" : "/System/Applications/Utilities/Terminal.app"
+      "value" : "/Applications/Ghostty.app"
     },
     {
       "actions" : [
@@ -323,118 +421,234 @@
           "key" : "1",
           "label" : "Maximize",
           "type" : "url",
-          "value" : "raycast://extensions/raycast/window-management/maximize"
+          "value" : "rectangle-pro://execute-action?name=maximize"
+        },
+        {
+          "actions" : [
+            {
+              "key" : "0",
+              "label" : "Bottom-right",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-right"
+            },
+            {
+              "key" : "1",
+              "label" : "Left half",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=left-half"
+            },
+            {
+              "key" : "2",
+              "label" : "Right half",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=right-half"
+            },
+            {
+              "key" : "7",
+              "label" : "Top-left",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-left"
+            },
+            {
+              "key" : "8",
+              "label" : "Top-right",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-right"
+            },
+            {
+              "key" : "9",
+              "label" : "Bottom-left",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-left"
+            }
+          ],
+          "key" : "2",
+          "label" : "Resize: Two columns",
+          "type" : "group"
+        },
+        {
+          "actions" : [
+            {
+              "key" : "0",
+              "label" : "Last two-thirds",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=last-two-thirds"
+            },
+            {
+              "key" : "1",
+              "label" : "First third",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=first-third"
+            },
+            {
+              "key" : "2",
+              "label" : "Center third",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=center-third"
+            },
+            {
+              "key" : "3",
+              "label" : "Last third",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=last-third"
+            },
+            {
+              "key" : "9",
+              "label" : "First two-thirds",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=first-two-thirds"
+            }
+          ],
+          "key" : "3",
+          "label" : "Resize: Three columns",
+          "type" : "group"
+        },
+        {
+          "actions" : [
+            {
+              "key" : "0",
+              "label" : "Last three-fourths",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=last-three-fourths"
+            },
+            {
+              "key" : "1",
+              "label" : "First fourth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=first-fourth"
+            },
+            {
+              "key" : "2",
+              "label" : "Second fourth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=second-fourth"
+            },
+            {
+              "key" : "3",
+              "label" : "Third fourth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=third-fourth"
+            },
+            {
+              "key" : "4",
+              "label" : "Last fourth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=last-fourth"
+            },
+            {
+              "key" : "9",
+              "label" : "First three-fourths",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=first-three-fourths"
+            }
+          ],
+          "key" : "4",
+          "label" : "Resize: Four columns",
+          "type" : "group"
+        },
+        {
+          "actions" : [
+            {
+              "key" : "1",
+              "label" : "Top-left sixth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-left-sixth"
+            },
+            {
+              "key" : "2",
+              "label" : "Top-center sixth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-center-sixth"
+            },
+            {
+              "key" : "3",
+              "label" : "Top-right sixth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-right-sixth"
+            },
+            {
+              "key" : "4",
+              "label" : "Bottom-left sixth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-left-sixth"
+            },
+            {
+              "key" : "5",
+              "label" : "Bottom-center sixth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-center-sixth"
+            },
+            {
+              "key" : "6",
+              "label" : "Bottom-right sixth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-right-sixth"
+            }
+          ],
+          "key" : "6",
+          "label" : "Resize: Sixths",
+          "type" : "group"
+        },
+        {
+          "actions" : [
+            {
+              "key" : "1",
+              "label" : "Top-left eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-left-eighth"
+            },
+            {
+              "key" : "2",
+              "label" : "Top-center-left eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-center-left-eighth"
+            },
+            {
+              "key" : "3",
+              "label" : "Top-center-right eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-center-right-eighth"
+            },
+            {
+              "key" : "4",
+              "label" : "Top-right eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=top-right-eighth"
+            },
+            {
+              "key" : "5",
+              "label" : "Bottom-left eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-left-eighth"
+            },
+            {
+              "key" : "6",
+              "label" : "Bottom-center-left eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-center-left-eighth"
+            },
+            {
+              "key" : "7",
+              "label" : "Bottom-center-right eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-center-right-eighth"
+            },
+            {
+              "key" : "8",
+              "label" : "Bottom-right eighth",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=bottom-right-eighth"
+            }
+          ],
+          "key" : "8",
+          "label" : "Resize: Eighths",
+          "type" : "group"
         },
         {
           "key" : "c",
           "label" : "Center",
           "type" : "url",
-          "value" : "raycast://extensions/raycast/window-management/center"
-        },
-        {
-          "key" : "f",
-          "label" : "Almost Maximize",
-          "type" : "url",
-          "value" : "raycast://extensions/raycast/window-management/almost-maximize"
-        },
-        {
-          "actions" : [
-            {
-              "key" : "h",
-              "label" : "Left Half",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/left-half"
-            },
-            {
-              "key" : "l",
-              "label" : "Right Half",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/right-half"
-            },
-            {
-              "key" : "j",
-              "label" : "Bottom Half",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/bottom-half"
-            },
-            {
-              "key" : "k",
-              "label" : "Top Half",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/top-half"
-            }
-          ],
-          "key" : "2",
-          "label" : "Halves",
-          "type" : "group"
-        },
-        {
-          "actions" : [
-            {
-              "key" : "1",
-              "label" : "First Third",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/first-third"
-            },
-            {
-              "key" : "2",
-              "label" : "Center Third",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/center-third"
-            },
-            {
-              "key" : "3",
-              "label" : "Last Third",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/last-third"
-            },
-            {
-              "key" : "9",
-              "label" : "First Two Thirds",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/first-two-thirds"
-            },
-            {
-              "key" : "0",
-              "label" : "Last Two Thirds",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/last-two-thirds"
-            }
-          ],
-          "key" : "3",
-          "label" : "Thirds",
-          "type" : "group"
-        },
-        {
-          "actions" : [
-            {
-              "key" : "1",
-              "label" : "Top Left",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/top-left-quarter"
-            },
-            {
-              "key" : "2",
-              "label" : "Top Right",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/top-right-quarter"
-            },
-            {
-              "key" : "3",
-              "label" : "Bottom Left",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/bottom-left-quarter"
-            },
-            {
-              "key" : "4",
-              "label" : "Bottom Right",
-              "type" : "url",
-              "value" : "raycast://extensions/raycast/window-management/bottom-right-quarter"
-            }
-          ],
-          "key" : "4",
-          "label" : "Quarters",
-          "type" : "group"
+          "value" : "rectangle-pro://execute-action?name=center"
         },
         {
           "actions" : [
@@ -459,10 +673,89 @@
           "type" : "group"
         },
         {
-          "key" : "r",
-          "label" : "Restore",
+          "key" : "f",
+          "label" : "Fullscreen",
           "type" : "url",
-          "value" : "raycast://extensions/raycast/window-management/restore"
+          "value" : "rectangle-pro://execute-action?name=fullscreen"
+        },
+        {
+          "key" : "m",
+          "label" : "Minimize",
+          "type" : "url",
+          "value" : "rectangle-pro://execute-action?name=minimize"
+        },
+        {
+          "key" : "p",
+          "label" : "Pin",
+          "type" : "url",
+          "value" : "rectangle-pro://execute-action?name=pin"
+        },
+        {
+          "key" : "q",
+          "label" : "Quit App",
+          "type" : "url",
+          "value" : "rectangle-pro://execute-action?name=quit-app"
+        },
+        {
+          "actions" : [
+            {
+              "key" : "_",
+              "label" : "Unstash All",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=unstash-all"
+            },
+            {
+              "key" : "-",
+              "label" : "Unstash",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=unstash"
+            },
+            {
+              "key" : "+",
+              "label" : "Stash All",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=stash-all"
+            },
+            {
+              "key" : "=",
+              "label" : "Stash",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=stash"
+            },
+            {
+              "key" : "h",
+              "label" : "Stash Left",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=stash-left"
+            },
+            {
+              "key" : "j",
+              "label" : "Stash Down",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=stash-down"
+            },
+            {
+              "key" : "k",
+              "label" : "Stash Up",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=stash-up"
+            },
+            {
+              "key" : "l",
+              "label" : "Stash Right",
+              "type" : "url",
+              "value" : "rectangle-pro://execute-action?name=stash-right"
+            }
+          ],
+          "key" : "s",
+          "label" : "Stash",
+          "type" : "group"
+        },
+        {
+          "key" : "w",
+          "label" : "Close",
+          "type" : "url",
+          "value" : "rectangle-pro://execute-action?name=close"
         }
       ],
       "key" : "w",
