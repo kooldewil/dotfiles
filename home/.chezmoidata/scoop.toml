@@ -1,0 +1,32 @@
+# Scoop buckets and packages for run_onchange_before_10-install-scoop.
+# Cannot use template syntax here — chezmoidata loads before the template engine.
+#
+# Philosophy: mise handles all CLI dev tools (bat, fd, rg, eza, fzf, etc.)
+# Scoop handles: bootstrap tools, Windows-native tools, fonts, and GUI apps.
+
+[scoop]
+buckets = ["extras", "nerd-fonts"]
+
+# Bootstrap (must be in Scoop — available before mise runs)
+# GUI apps and Windows-native tools without mise equivalents
+packages = [
+  "mise",             # Runtime version manager — bootstraps all CLI dev tools
+  "kanata",           # Keyboard remapping
+  "Meslo-NF",         # Nerd Font for terminal/prompt (Powerlevel10k)
+  "1password",        # Password manager
+  "1password-cli",    # 1Password CLI (used by chezmoi for secrets)
+  "ghostty",          # GPU-accelerated terminal
+  "obsidian",         # Note-taking
+  "discord",          # Communication
+  "slack",            # Communication
+  "telegram",         # Communication
+  "whatsapp",         # Communication
+  "vlc",              # Media player
+  "spotify",          # Music
+  "dropbox",          # Cloud storage
+  "ollama",           # Local AI models
+  "calibre",          # Ebook manager
+  "logitech-g-hub",   # Logitech peripherals
+  "todoist",          # Task manager
+  "flow-launcher",    # Launcher (Raycast equivalent on Windows)
+]

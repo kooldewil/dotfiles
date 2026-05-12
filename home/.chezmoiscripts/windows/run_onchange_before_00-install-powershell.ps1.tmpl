@@ -1,0 +1,23 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Install PowerShell 7 (pwsh) if not already present.
+# chezmoi uses powershell.exe (5.1) as the interpreter so this runs on a
+# fresh machine before pwsh exists.
+
+$ErrorActionPreference = "Stop"
+
+if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+    $v = (pwsh --version)
+    Write-Host "✅ $v already installed" -ForegroundColor Green
+    exit 0
+}
+
+Write-Host "📦 Installing PowerShell 7..." -ForegroundColor Cyan
+
+try {
+    winget install --id Microsoft.PowerShell --source winget --silent --accept-package-agreements --accept-source-agreements
+    Write-Host "✅ PowerShell 7 installed" -ForegroundColor Green
+} catch {
+    Write-Host "❌ winget install failed. Install manually: https://aka.ms/powershell" -ForegroundColor Red
+    exit 1
+}
+{{- end }}

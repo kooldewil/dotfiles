@@ -1,0 +1,103 @@
+{{- if eq .chezmoi.os "windows" -}}
+# Install Scoop, add buckets, and install packages declared in .chezmoidata/scoop.toml.
+# Runs on every chezmoi apply but skips already-installed items.
+
+$ErrorActionPreference = "Stop"
+
+function Write-Status($msg) { Write-Host "  $msg" -ForegroundColor Cyan }
+function Write-Ok($msg)     { Write-Host "  ✅ $msg" -ForegroundColor Green }
+function Write-Warn($msg)   { Write-Host "  ⚠️  $msg" -ForegroundColor Yellow }
+function Write-Fail($msg)   { Write-Host "  ❌ $msg" -ForegroundColor Red }
+
+# ── Install Scoop ────────────────────────────────────────────────────────────
+
+if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+    Write-Status "Installing Scoop..."
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+    Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+    Write-Ok "Scoop installed"
+} else {
+    Write-Ok "Scoop already installed"
+}
+
+# ── Add buckets ──────────────────────────────────────────────────────────────
+
+$existingBuckets = scoop bucket list | ForEach-Object { $_.Name }
+
+$buckets = @(
+  {{- range .scoop.buckets }}
+  "{{ . }}",
+  {{- end }}
+)
+
+{{- if .work }}
+$buckets += @(
+  {{- range .scoop.work.buckets }}
+  "{{ . }}",
+  {{- end }}
+)
+{{- end }}
+
+$bucketUrls = @{
+  {{- range $name, $url := .scoop.bucket_urls }}
+  "{{ $name }}" = "{{ $url }}"
+  {{- end }}
+}
+
+foreach ($bucket in $buckets) {
+    if ($existingBuckets -contains $bucket) {
+        Write-Ok "Bucket '$bucket' already added"
+    } else {
+        $url = $bucketUrls[$bucket]
+        Write-Status "Adding bucket '$bucket'..."
+        if ($url) {
+            scoop bucket add $bucket $url
+        } else {
+            scoop bucket add $bucket
+        }
+        Write-Ok "Bucket '$bucket' added"
+    }
+}
+
+# ── Install packages ─────────────────────────────────────────────────────────
+
+$packages = @(
+  {{- range .scoop.packages }}
+  "{{ . }}",
+  {{- end }}
+)
+
+{{- if .work }}
+$packages += @(
+  {{- range .scoop.work.packages }}
+  "{{ . }}",
+  {{- end }}
+)
+{{- end }}
+
+$errors = @()
+
+foreach ($pkg in $packages) {
+    $installed = scoop list $pkg 2>$null | Where-Object { $_ -match $pkg }
+    if ($installed) {
+        Write-Ok "$pkg"
+    } else {
+        Write-Status "Installing $pkg..."
+        try {
+            scoop install $pkg
+            Write-Ok "$pkg installed"
+        } catch {
+            Write-Fail "$pkg — $_"
+            $errors += $pkg
+        }
+    }
+}
+
+if ($errors.Count -gt 0) {
+    Write-Warn "Failed to install: $($errors -join ', ')"
+    exit 1
+}
+
+Write-Host ""
+Write-Host "🎉 Scoop setup complete" -ForegroundColor Green
+{{- end }}
