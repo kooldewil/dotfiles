@@ -1,0 +1,22 @@
+{{- if .dev_computer }}
+# mise - modern runtime version manager
+# Handles node, pnpm, deno, bun, uv, python, go, rust, zig, neovim, etc.
+# Must load first so all mise-managed tools are on PATH for subsequent modules.
+
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate zsh)"
+
+    if [[ -n ${ZSH_NAME} ]]; then
+        eval "$(mise completion zsh)"
+    fi
+fi
+
+# pnpm global packages need PNPM_HOME for global installs
+if command -v pnpm >/dev/null 2>&1; then
+    export PNPM_HOME="$HOME/.local/share/pnpm"
+    case ":$PATH:" in
+        *":$PNPM_HOME/bin:"*) ;;
+        *) export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH" ;;
+    esac
+fi
+{{- end }}

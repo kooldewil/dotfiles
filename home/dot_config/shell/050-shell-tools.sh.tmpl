@@ -1,42 +1,52 @@
-# Shell Tools
-# Integration with modern shell enhancement tools
+# Shell Enhancement Tools
+# Loaded after 005-mise.sh so all tools are on PATH via mise shims.
 
-# ─────────────────────────────────────────────────────────────────────────────
-# zoxide - Smarter cd command
-# ─────────────────────────────────────────────────────────────────────────────
-if command -v zoxide &> /dev/null; then
-  eval "$(zoxide init zsh)"
-  # Aliases: z (jump), zi (interactive)
-fi
-
-# ─────────────────────────────────────────────────────────────────────────────
-# atuin - Enhanced shell history
-# ─────────────────────────────────────────────────────────────────────────────
-if command -v atuin &> /dev/null; then
-  eval "$(atuin init zsh)"
-  # Press Ctrl+R for enhanced history search
-fi
-
-# ─────────────────────────────────────────────────────────────────────────────
-# fzf - Fuzzy finder
-# ─────────────────────────────────────────────────────────────────────────────
-if command -v fzf &> /dev/null; then
-  # Load fzf keybindings and completion
-  source <(fzf --zsh)
-
-  # Use fd for fzf if available (respects .gitignore)
-  if command -v fd &> /dev/null; then
+# fzf — fuzzy finder defaults and Catppuccin Mocha theme
+# Keybindings (Ctrl+T) handled by television once that's wired in
+if command -v fzf >/dev/null 2>&1; then
     export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
-    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_DEFAULT_OPTS=" \
+        --height=40% --layout=reverse --border --info=inline \
+        --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+        --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+        --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+        --color=selected-bg:#45475a"
     export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
-  fi
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {} 2>/dev/null || ls {}'"
+    eval "$(fzf --zsh)"
+fi
 
-  # fzf appearance
-  export FZF_DEFAULT_OPTS='
-    --height=40%
-    --layout=reverse
-    --border
-    --info=inline
-    --preview-window=right:50%:wrap
-  '
+# zoxide — smarter cd (z / zi)
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh)"
+fi
+
+# atuin — shell history with sync
+# ATUIN_NOBIND=true lets us wire our own keys below
+if command -v atuin >/dev/null 2>&1; then
+    export ATUIN_NOBIND="true"
+    eval "$(atuin init zsh)"
+    bindkey '^r' atuin-search
+    bindkey '^[[A' atuin-up-search
+    bindkey '^[OA'  atuin-up-search
+fi
+
+# carapace — universal completion engine (bridges zsh/fish/bash/inshellisense)
+# Must run after compinit (OMZ handles that before shell-loader runs)
+if command -v carapace >/dev/null 2>&1; then
+    export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense'
+    zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
+    source <(carapace _carapace)
+fi
+
+# television — context-aware fuzzy finder
+# Ctrl+T picks the right channel based on command context
+if command -v tv >/dev/null 2>&1; then
+    eval "$(tv init zsh)"
+fi
+
+# pay-respects — corrects last failed command (thefuck replacement)
+# Usage: f  (alias set below)
+if command -v pay-respects >/dev/null 2>&1; then
+    eval "$(pay-respects zsh --alias f)"
 fi
