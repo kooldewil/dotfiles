@@ -9,7 +9,7 @@ function Write-Ok($msg)     { Write-Host "  [OK] $msg" -ForegroundColor Green }
 function Write-Warn($msg)   { Write-Host "  [WARN] $msg" -ForegroundColor Yellow }
 function Write-Fail($msg)   { Write-Host "  [ERR] $msg" -ForegroundColor Red }
 
-# ── Install Scoop ────────────────────────────────────────────────────────────
+# -- Install Scoop ------------------------------------------------------------
 
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Write-Status "Installing Scoop..."
@@ -20,22 +20,18 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Write-Ok "Scoop already installed"
 }
 
-# ── Add buckets ──────────────────────────────────────────────────────────────
+# -- Add buckets --------------------------------------------------------------
 
 $existingBuckets = scoop bucket list | ForEach-Object { $_.Name }
 
-$buckets = @(
-  {{- range .scoop.buckets }}
-  "{{ . }}",
-  {{- end }}
-)
-
+$buckets = @()
+{{- range .scoop.buckets }}
+$buckets += "{{ . }}"
+{{- end }}
 {{- if .work }}
-$buckets += @(
-  {{- range .scoop.work.buckets }}
-  "{{ . }}",
-  {{- end }}
-)
+{{- range .scoop.work.buckets }}
+$buckets += "{{ . }}"
+{{- end }}
 {{- end }}
 
 $bucketUrls = @{
@@ -59,20 +55,16 @@ foreach ($bucket in $buckets) {
     }
 }
 
-# ── Install packages ─────────────────────────────────────────────────────────
+# -- Install packages ---------------------------------------------------------
 
-$packages = @(
-  {{- range .scoop.packages }}
-  "{{ . }}",
-  {{- end }}
-)
-
+$packages = @()
+{{- range .scoop.packages }}
+$packages += "{{ . }}"
+{{- end }}
 {{- if .work }}
-$packages += @(
-  {{- range .scoop.work.packages }}
-  "{{ . }}",
-  {{- end }}
-)
+{{- range .scoop.work.packages }}
+$packages += "{{ . }}"
+{{- end }}
 {{- end }}
 
 $errors = @()
@@ -87,7 +79,7 @@ foreach ($pkg in $packages) {
             scoop install $pkg
             Write-Ok "$pkg installed"
         } catch {
-            Write-Fail "$pkg — $_"
+            Write-Fail "$pkg - $_"
             $errors += $pkg
         }
     }
