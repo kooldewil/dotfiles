@@ -1,7 +1,11 @@
 {{- $name := "" -}}
 
-{{/* dev_computer: prompted once per machine, cached in chezmoi config */}}
-{{- $dev_computer := promptBoolOnce . "dev_computer" "Install dev tools on this machine?" -}}
+{{/* dev_computer: prompted once per machine, cached in chezmoi config.
+     Defaults to true when stdin is not a TTY (e.g. PowerShell 5 on Windows). */}}
+{{- $dev_computer := true -}}
+{{- if or (stdinIsATTY) (hasKey . "dev_computer") -}}
+{{-   $dev_computer = promptBoolOnce . "dev_computer" "Install dev tools on this machine?" -}}
+{{- end -}}
 
 {{/* Boolean feature tags */}}
 {{- $ephemeral := false -}}

@@ -8,3 +8,19 @@
 .local/share/zinit/**/*.zwc
 .local/share/zinit/**/zcompdump*
 
+{{ if ne .chezmoi.os "darwin" }}
+# macOS-only — skip on non-macOS
+.zshrc
+.p10k.zsh
+.config/shell
+.config/shell-loader.sh
+.config/path-management.sh
+.config/leaderkey
+.config/macrowhisper
+Library
+{{ end }}
+
+{{ if ne .chezmoi.os "windows" }}
+# Windows-only — skip on non-Windows
+# (none yet)
+{{ end }}
