@@ -1,35 +1,27 @@
 # Brewfile for Shaunak's Mac Setup
 # Install with: brew bundle
+#
+# Philosophy: brew handles bootstrap tools, GUI apps, and system-level tools.
+# CLI dev tools (bat, fd, rg, eza, fzf, gh, neovim, jq, etc.) are managed
+# by mise — see ~/.config/mise/config.toml.
 
 # Taps
 tap "ognistik/formulae"
 tap "mfkrause/tap"
 
-# CLI Tools
-brew "chezmoi"           # Dotfile manager
+# Bootstrap — must be in brew so they're available before mise runs
+brew "mise"              # Runtime version manager — installs all CLI dev tools
+brew "chezmoi"           # Dotfile manager — installs and manages this config
+
+# macOS system tools (no mise equivalent)
 brew "mas"               # Mac App Store CLI
 brew "wget"              # Download tool
-brew "jq"                # JSON processor
-brew "tree"              # Directory visualization
-brew "htop"              # Process viewer
-brew "eza"               # Modern ls replacement
-brew "bat"               # Better cat
-brew "ripgrep"           # Fast grep
-brew "fd"                # Fast find
-brew "fzf"               # Fuzzy finder
-brew "gh"                # GitHub CLI
-brew "neovim"            # Text editor
-brew "topgrade"          # System updater
-brew "uv"                # Python package manager
-brew "kanata"            # Keyboard remapping
+brew "tree"              # Directory tree viewer
+brew "htop"              # Interactive process viewer
+brew "kanata"            # Keyboard remapping (needs system permissions)
 brew "tmux"              # Terminal multiplexer
 brew "mole"              # Deep clean and optimize Mac
 brew "ognistik/formulae/macrowhisper" # Keyboard macro triggered transcription
-
-# Shell Enhancement Tools
-brew "zoxide"            # Smarter cd command
-brew "atuin"             # Enhanced shell history
-brew "mise"              # Runtime version manager (node, python, go, etc.)
 
 # Note: zsh-autosuggestions and zsh-syntax-highlighting
 # are now managed by Zinit plugin manager
