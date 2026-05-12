@@ -1,20 +1,39 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 90,
+  "includeCoAuthoredBy": false,
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
+    "EDITOR": "nvim",
+    "GIT_EDITOR": "nvim --wait"
+  },
   "permissions": {
     "allow": [
       "Bash(brew :*)",
+      "Bash(pnpm run :*)",
       "Bash(cargo :*)",
       "Bash(go :*)",
       "Bash(git :*)",
+      "Bash(git worktree :*)",
       "Bash(gh :*)",
+      "Bash(jj :*)",
       "Bash(docker :*)",
+      "Bash(kubectl :*)",
+      "Bash(terraform :*)",
       "Bash(rg :*)",
       "Bash(ripgrep :*)",
       "Bash(fd :*)",
       "Bash(fzf :*)",
       "Bash(bat :*)",
       "Bash(eza :*)",
+      "Bash(delta :*)",
+      "Bash(zoxide :*)",
+      "Bash(duf :*)",
+      "Bash(htop :*)",
+      "Bash(btop :*)",
       "Bash(jq :*)",
       "Bash(yq :*)",
+      "Bash(hexyl :*)",
       "Bash(chezmoi :*)",
       "Bash(mise :*)",
       "Bash(npx :*)",
@@ -28,6 +47,7 @@
       "Bash(rm -rf:*)",
       "Bash(dd if=/dev/zero of=/dev/*)",
       "Bash(mkfs.:*)",
+      "Bash(> /dev/sda*)",
       "Read(**/.env)",
       "Read(**/.env.*)",
       "Read(**/secrets/**)",
@@ -37,10 +57,99 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'python \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/block-secrets.py'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/block-dangerous-commands.sh'"
+          }
+        ]
+      }
+{{- if lookPath "jj" }},
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/jj-block-trunk.sh'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/jj-describe-claude.sh'"
+          }
+        ]
+      }
+{{- end }}
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/after-edit.sh'"
+          }
+{{- if lookPath "jj" }},
+          {
+            "type": "command",
+            "command": "bash -c 'test -d .jj && jj diff --stat 2>/dev/null || true'"
+          }
+{{- end }}
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/memory-push.sh\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/end-of-turn.sh'"
+          }
+{{- if lookPath "jj" }},
+          {
+            "type": "command",
+            "command": "bash -c 'test -d .jj && { jj st && jj diff --stat; } || true'"
+          }
+{{- end }}
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/notify.sh'"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "",
         "hooks": [
+          {
+            "type": "command",
+            "command": "find \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\" -name '*.sh' ! -executable -exec chmod +x {} + 2>/dev/null; find \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\" -name '*.py' ! -executable -exec chmod +x {} + 2>/dev/null; true"
+          },
           {
             "type": "command",
             "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/memory-pull.sh\"",
@@ -53,25 +162,41 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/memory-push.sh\"",
-            "timeout": 30
-          }
-        ]
-      }
     ]
   },
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
+    "command": "bun x -y ccstatusline@latest",
+    "padding": 0
   },
   "enabledPlugins": {
-    "skill-creator@claude-plugins-official": true
-  }
+    "skill-creator@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
+  },
+  "autoUpdatesChannel": "latest",
+  "verbose": true,
+  "preferredNotifChannel": "terminal_bell",
+  "agentPushNotifEnabled": false
 }

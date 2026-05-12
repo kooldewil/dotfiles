@@ -6,12 +6,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# XDG Base Directory Specification
-export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
-
 # Oh My Zsh configuration
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
@@ -31,6 +25,10 @@ if [[ -f "$XDG_CONFIG_HOME/path-management.sh" ]]; then
   source "$XDG_CONFIG_HOME/path-management.sh"
   load_paths
 fi
+
+{{- if and (not .ephemeral) .personal }}
+export GITHUB_TOKEN={{ onepasswordRead "op://Private/GitHub PAT/token" | trim }}
+{{- end }}
 
 # Load modular shell configurations
 if [[ -f "$XDG_CONFIG_HOME/shell-loader.sh" ]]; then
