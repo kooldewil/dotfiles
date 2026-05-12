@@ -15,7 +15,6 @@ SAVEHIST=50000
 setopt SHARE_HISTORY          # Share history between sessions
 setopt HIST_IGNORE_DUPS       # Don't record duplicates
 setopt HIST_IGNORE_ALL_DUPS   # Delete old duplicates when new ones added
-setopt HIST_IGNORE_SPACE      # Don't record commands starting with space
 setopt HIST_REDUCE_BLANKS     # Remove superfluous blanks
 setopt HIST_VERIFY            # Show command before executing from history
 setopt EXTENDED_HISTORY       # Save timestamp and duration

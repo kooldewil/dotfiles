@@ -1,6 +1,7 @@
 # Common Aliases
 
 # ── Navigation ────────────────────────────────────────────────────────────────
+alias cd..='cd ../'
 alias ..='cd ../'
 alias ...='cd ../../'
 alias .3='cd ../../../'
@@ -8,6 +9,11 @@ alias .4='cd ../../../../'
 alias ~='cd ~'
 alias ax='chmod a+x'
 alias path='echo -e ${PATH//:/\\n}'
+alias fpath='echo -e ${FPATH//:/\\n}'
+alias untar='tar -zxvf'
+alias mktar='tar -cvzf'
+alias numfiles='echo $(ls -1 | wc -l)'
+alias listpaths='echo $PATH | tr ":" "\n" | uniq -c | sort -nr'
 
 # ── Tool replacements ─────────────────────────────────────────────────────────
 {{- if lookPath "bat" }}
