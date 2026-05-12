@@ -1,0 +1,40 @@
+## Atuin configuration — https://atuin.sh/docs/config
+
+# Store DB under XDG data dir to keep $HOME clean
+db_path = "{{ .chezmoi.homeDir }}/.local/share/atuin/history.db"
+
+dialect  = "us"
+timezone = "local"
+
+## UI
+style        = "compact"
+show_preview = true
+enter_accept = true   # Enter executes; Tab puts command in shell for editing
+ctrl_n_shortcuts = false
+
+## Search
+search_mode = "fuzzy"
+filter_mode = "global"
+
+## Up-arrow shows commands from current directory (workspace-aware)
+filter_mode_shell_up_key_binding = "directory"
+workspaces = true
+
+## Don't record secrets or bare tildes
+history_filter = [
+  "^secret-",
+  "^[A-Z_]+=.* ",
+  "^~$",
+]
+
+update_check = true
+
+[stats]
+common_prefix = ["sudo"]
+common_subcommands = [
+  "cargo", "docker", "git", "go", "jj", "kubectl",
+  "mise", "npm", "pnpm", "tmux",
+]
+
+[sync]
+records = true
