@@ -4,9 +4,8 @@
 # Philosophy: mise handles all CLI dev tools (bat, fd, rg, eza, fzf, etc.)
 # Scoop handles: bootstrap tools, Windows-native tools, fonts, and GUI apps.
 #
-# Not in any official Scoop bucket — install via winget instead:
+# Not confirmed in any official Scoop bucket — install via winget instead:
 #   1password:      winget install AgileBits.1Password
-#   1password-cli:  winget install AgileBits.1Password.CLI
 #   ghostty:        winget install --id ghostty.ghostty  (or https://ghostty.org)
 #   whatsapp:       winget install 9NKSQGP7F2NH
 #   dropbox:        winget install Dropbox.Dropbox
@@ -20,6 +19,7 @@ buckets = ["extras", "nerd-fonts"]
 # GUI apps and Windows-native tools without mise equivalents
 packages = [
   "mise",           # Runtime version manager — bootstraps all CLI dev tools (main bucket)
+  "1password-cli",  # 1Password CLI (used by chezmoi for secrets) (main bucket)
   "kanata",         # Keyboard remapping
   "Meslo-NF",       # Nerd Font for terminal/prompt (Powerlevel10k)
   "obsidian",       # Note-taking
