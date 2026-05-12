@@ -1,0 +1,203 @@
+# AeroSpace window manager configuration
+# Docs: https://nikitabobko.github.io/AeroSpace/guide
+
+after-login-command = ['enable off']
+after-startup-command = [
+  'exec-and-forget borders active_color=0xffe1e3e4 inactive_color=0xff494d64 width=5.0',
+]
+
+start-at-login = true
+
+# Normalizations
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+accordion-padding = 30
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+key-mapping.preset = 'qwerty'
+
+# Mouse follows focus when active monitor changes
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+[gaps]
+inner.horizontal = 10
+inner.vertical   = 10
+outer.left       = 10
+outer.right      = 10
+outer.top        = 10
+outer.bottom     = 10
+
+# ── Main mode ─────────────────────────────────────────────────────────────────
+[mode.main.binding]
+
+cmd-h     = []  # Disable "hide application"
+cmd-alt-h = []  # Disable "hide others"
+
+# Layout
+alt-slash = 'layout tiles horizontal vertical'
+alt-comma = 'layout accordion horizontal vertical'
+
+# Focus (vim-style)
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+
+# Move
+alt-shift-h = 'move left'
+alt-shift-j = 'move down'
+alt-shift-k = 'move up'
+alt-shift-l = 'move right'
+
+# Resize
+alt-shift-minus = 'resize smart -50'
+alt-shift-equal = 'resize smart +50'
+
+# Fullscreen
+alt-shift-f = 'fullscreen'
+
+# Workspace navigation
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+alt-8 = 'workspace 8'
+alt-9 = 'workspace 9'
+alt-b = 'workspace B'  # Browser
+alt-d = 'workspace D'  # Development
+alt-m = 'workspace M'  # Music
+alt-n = 'workspace N'  # Notes
+alt-o = 'workspace O'  # Other
+alt-s = 'workspace S'  # Social
+alt-t = 'workspace T'  # Terminal
+alt-w = 'workspace W'  # Work
+
+# Move window to workspace
+alt-shift-1 = 'move-node-to-workspace 1'
+alt-shift-2 = 'move-node-to-workspace 2'
+alt-shift-3 = 'move-node-to-workspace 3'
+alt-shift-4 = 'move-node-to-workspace 4'
+alt-shift-5 = 'move-node-to-workspace 5'
+alt-shift-6 = 'move-node-to-workspace 6'
+alt-shift-7 = 'move-node-to-workspace 7'
+alt-shift-8 = 'move-node-to-workspace 8'
+alt-shift-9 = 'move-node-to-workspace 9'
+alt-shift-b = 'move-node-to-workspace B'
+alt-shift-d = 'move-node-to-workspace D'
+alt-shift-m = 'move-node-to-workspace M'
+alt-shift-n = 'move-node-to-workspace N'
+alt-shift-o = 'move-node-to-workspace O'
+alt-shift-s = 'move-node-to-workspace S'
+alt-shift-t = 'move-node-to-workspace T'
+alt-shift-w = 'move-node-to-workspace W'
+
+alt-leftSquareBracket  = 'workspace --wrap-around prev'
+alt-rightSquareBracket = 'workspace --wrap-around next'
+alt-tab                = 'workspace-back-and-forth'
+alt-shift-tab          = 'move-workspace-to-monitor --wrap-around next'
+
+# Mode switches
+alt-shift-semicolon = 'mode service'
+alt-shift-r         = 'mode resize'
+alt-ctrl-p          = 'mode pane'
+
+# ── Resize mode ───────────────────────────────────────────────────────────────
+[mode.resize.binding]
+h     = 'resize width -50'
+j     = 'resize height +50'
+k     = 'resize height -50'
+l     = 'resize width +50'
+b     = 'balance-sizes'
+minus = 'resize smart -50'
+equal = 'resize smart +50'
+enter = 'mode main'
+esc   = 'mode main'
+
+# ── Service mode ──────────────────────────────────────────────────────────────
+[mode.service.binding]
+esc       = ['reload-config', 'mode main']
+r         = ['flatten-workspace-tree', 'mode main']
+f         = ['layout floating tiling', 'mode main']
+backspace = ['close-all-windows-but-current', 'mode main']
+alt-shift-h = ['join-with left',  'mode main']
+alt-shift-j = ['join-with down',  'mode main']
+alt-shift-k = ['join-with up',    'mode main']
+alt-shift-l = ['join-with right', 'mode main']
+
+# ── Pane mode ─────────────────────────────────────────────────────────────────
+[mode.pane.binding]
+alt-c = ['reload-config', 'mode main']
+esc   = 'mode main'
+cmd-h = []
+
+# ── Empty mode ────────────────────────────────────────────────────────────────
+[mode.empty.binding]
+esc   = 'mode main'
+cmd-h = []
+
+# ── Auto-assign windows to workspaces ─────────────────────────────────────────
+
+# Browser → B
+[[on-window-detected]]
+if.app-id = 'company.thebrowser.Browser'  # Arc
+run = 'move-node-to-workspace B'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Safari'
+run = 'move-node-to-workspace B'
+
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
+run = 'move-node-to-workspace B'
+
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
+run = 'move-node-to-workspace B'
+
+# Music → M
+[[on-window-detected]]
+if.app-id = 'com.spotify.client'
+run = 'move-node-to-workspace M'
+
+# Notes → N
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = 'move-node-to-workspace N'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Notes'
+run = 'move-node-to-workspace N'
+
+# Social → S
+[[on-window-detected]]
+if.app-id = 'com.apple.MobileSMS'
+run = 'move-node-to-workspace S'
+
+[[on-window-detected]]
+if.app-id = 'ru.keepcoder.Telegram'
+run = 'move-node-to-workspace S'
+
+[[on-window-detected]]
+if.app-id = 'com.hammerandchisel.discord'
+run = 'move-node-to-workspace S'
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgui'
+run = 'move-node-to-workspace S'
+
+[[on-window-detected]]
+if.app-id = 'net.whatsapp.WhatsApp'
+run = 'move-node-to-workspace S'
+
+# Terminal → T
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = 'move-node-to-workspace T'
+
+# Monitor assignment
+[workspace-to-monitor-force-assignment]
+1 = 'main'
