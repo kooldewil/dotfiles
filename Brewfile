@@ -6,6 +6,7 @@
 # by mise — see ~/.config/mise/config.toml.
 
 # Taps
+tap "nikitabobko/tap"
 tap "ognistik/formulae"
 tap "mfkrause/tap"
 
@@ -45,7 +46,6 @@ cask "alt-tab"            # Window switcher
 cask "rectangle-pro"      # Window management
 cask "linearmouse"        # Mouse customization
 cask "keyclu"             # Keyboard shortcut viewer
-cask "showmeyourhotkeys"  # Hotkey viewer
 cask "homerow"            # Keyboard shortcuts for every button on screen
 cask "airbuddy"           # AirPods companion
 cask "lunar"              # Display brightness control
@@ -81,7 +81,7 @@ cask "whatsapp"
 
 # Cloud Storage
 cask "dropbox"
-cask "onedrive"
+cask "homebrew/cask/onedrive"
 
 # AI Tools
 cask "chatgpt"
