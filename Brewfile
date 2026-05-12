@@ -22,6 +22,7 @@ brew "neovim"            # Text editor
 brew "topgrade"          # System updater
 brew "uv"                # Python package manager
 brew "kanata"            # Keyboard remapping
+brew "tmux"              # Terminal multiplexer
 brew "mole"              # Deep clean and optimize Mac
 brew "ognistik/formulae/macrowhisper" # Keyboard macro triggered transcription
 

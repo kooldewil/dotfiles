@@ -2,6 +2,12 @@
 # Managed by chezmoi - automatically downloaded/updated
 
 {{ if eq .chezmoi.os "darwin" -}}
+# TPM — tmux plugin manager
+[".config/tmux/plugins/tpm"]
+  type = "git-repo"
+  url = "https://github.com/tmux-plugins/tpm"
+  refreshPeriod = "168h"
+
 # Oh My Zsh framework
 [".oh-my-zsh"]
   type = "archive"
