@@ -1,0 +1,75 @@
+{{- if .dev_computer -}}
+[user]
+name = {{ .name | quote }}
+email = {{ .email | quote }}
+
+[ui]
+diff-formatter = ["delta", "--dark", "--line-numbers"]
+pager = ["delta"]
+paginate = "auto"
+
+{{- if .personal }}
+[signing]
+behavior = "own"
+backend = "ssh"
+key = "~/.ssh/id_ed25519.pub"
+{{- end }}
+
+[git]
+private-commits = "wip()"
+
+[remotes.origin]
+auto-track-bookmarks = "glob:*"
+
+[template-aliases]
+'format_short_change_id(id)' = 'id.shortest()'
+
+[aliases]
+l   = ["log", "-r", "@-10::@"]
+s   = ["status"]
+d   = ["diff"]
+c   = ["commit"]
+n   = ["new"]
+e   = ["edit"]
+sq  = ["squash"]
+ci  = ["commit", "--interactive"]
+si  = ["squash", "--interactive"]
+
+# Operation log / undo
+opl = ["op", "log"]
+u   = ["op", "undo"]
+
+# Git operations
+pull = ["git", "fetch"]
+push = ["git", "push"]
+
+# Start new work from trunk or develop
+start = ["new", "trunk()"]
+feat  = ["new", "develop()", "-m"]
+
+# Bookmark management
+tug = ["bookmark", "move", "--from", "closest_bookmark(@-)", "--to", "@-"]
+nb  = ["bookmark", "create", "-r", "@-"]
+
+# Filtered views
+ready  = ["log", "-r", "ready()"]
+wip    = ["log", "-r", "wip()"]
+stale  = ["log", "-r", "stale()"]
+recent = ["log", "-r", "recent()"]
+local  = ["log", "-r", "local()"]
+
+[revset-aliases]
+"trunk()"   = 'latest(remote_bookmarks(exact:"origin/main") | remote_bookmarks(exact:"origin/master"))'
+"develop()" = 'latest(remote_bookmarks(exact:"origin/develop"))'
+"mine"      = 'author(exact:"{{ .email }}")'
+
+"wip()"   = 'description(glob:"wip:*") | description(glob:"claude:*") | (empty() & mutable()) | description(exact:"")'
+"ready()" = "(mine & mutable()) ~ wip() ~ @"
+
+"closest_bookmark(to)" = "heads(::to & bookmarks())"
+
+"stack()"  = "ancestors(@, 2) & mutable()"
+"recent()" = 'committer_date(after:"1 month ago")'
+"local()"  = "mine & mutable()"
+"stale()"  = "mine & mutable() ~ descendants(trunk())"
+{{- end }}
