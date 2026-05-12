@@ -1,6 +1,6 @@
 [user]
-	name = {{ .name | default "" }}
-	email = {{ .email | default "" }}
+	name = {{ get . "name" | default "" }}
+	email = {{ get . "email" | default "" }}
 {{- if .personal }}
 	signingkey = ssh-ed25519 PLACEHOLDER
 [gpg]
