@@ -13,7 +13,8 @@
 #   todoist:        winget install Doist.Todoist
 
 [scoop]
-buckets = ["extras", "nerd-fonts"]
+buckets     = ["extras", "nerd-fonts"]
+bucket_urls = {}  # custom bucket name → URL overrides (e.g. my-bucket = "https://...")
 
 # Bootstrap (must be in Scoop — available before mise runs)
 # GUI apps and Windows-native tools without mise equivalents
