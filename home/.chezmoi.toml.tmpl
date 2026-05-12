@@ -7,12 +7,16 @@
 {{-   $dev_computer = promptBoolOnce . "dev_computer" "Install dev tools on this machine?" -}}
 {{- end -}}
 
+{{/* 1Password vault — set during machine detection, empty on ephemeral machines.
+     Personal: "Personal Identity" item; Work: "Work Identity" item.
+     Both live in the "Personal" vault. */}}
+{{- $opVault := "" -}}
+
 {{/* Boolean feature tags */}}
 {{- $ephemeral := false -}}
 {{- $work      := false -}}
 {{- $is_wsl    := false -}}
 {{- $personal  := false -}}
-{{- $email     := "" -}}
 
 {{/* OS detection */}}
 {{- $osID := .chezmoi.os -}}
@@ -54,12 +58,16 @@
 {{- if and (not $ephemeral) (eq .chezmoi.os "darwin") -}}
 {{-   if has $hostname $personalMacHosts -}}
 {{-     $personal = true -}}
+{{-     $opVault = "Personal Identity" -}}
 {{-   else if or (stdinIsATTY) (hasKey . "ephemeral") -}}
 {{-     $ephemeral = promptBoolOnce . "ephemeral" "Is this an ephemeral machine (no secrets)?" -}}
 {{-     if not $ephemeral -}}
 {{-       $personal = promptBoolOnce . "personal" "Is this your personal machine?" -}}
-{{-       if not $personal -}}
+{{-       if $personal -}}
+{{-         $opVault = "Personal Identity" -}}
+{{-       else -}}
 {{-         $work = true -}}
+{{-         $opVault = "Work Identity" -}}
 {{-       end -}}
 {{-     end -}}
 {{-   else -}}
@@ -71,12 +79,16 @@
 {{- if and (not $ephemeral) (eq .chezmoi.os "windows") -}}
 {{-   if has ($hostname | lower) $personalWindowsHosts -}}
 {{-     $personal = true -}}
+{{-     $opVault = "Personal Identity" -}}
 {{-   else if or (stdinIsATTY) (hasKey . "ephemeral") -}}
 {{-     $ephemeral = promptBoolOnce . "ephemeral" "Is this an ephemeral machine (no secrets)?" -}}
 {{-     if not $ephemeral -}}
 {{-       $personal = promptBoolOnce . "personal" "Is this your personal machine?" -}}
-{{-       if not $personal -}}
+{{-       if $personal -}}
+{{-         $opVault = "Personal Identity" -}}
+{{-       else -}}
 {{-         $work = true -}}
+{{-         $opVault = "Work Identity" -}}
 {{-       end -}}
 {{-     end -}}
 {{-   else -}}
@@ -85,18 +97,20 @@
 {{- end -}}
 
 {{/* ── 1Password identity ─────────────────────────────────────────────
-     Single vault with two items:
-       Personal: "Personal Identity" — fields: full name, email
-       Work:     "Work Identity"     — fields: full name, email
-     Adjust item/field names to match your 1Password setup.
-     Vault name: change "Personal" if your vault has a different name. */}}
-{{- if and (not $ephemeral) (or $personal $work) -}}
-{{-   if $personal -}}
-{{-     $name  = onepasswordRead "op://Personal/Personal Identity/full name" | trim -}}
-{{-     $email = onepasswordRead "op://Personal/Personal Identity/email" | trim -}}
+     Vault: "Personal" — items: "Personal Identity" / "Work Identity"
+     Fields: "full name", "email"
+     If op CLI is not yet installed (fresh machine), falls back to
+     promptStringOnce and stores the answer in local chezmoi.toml only
+     (never committed). After first apply, run_onchange_before_20-
+     install-1password installs op for subsequent applies.             */}}
+{{- $email := "" -}}
+{{- if $opVault -}}
+{{-   if lookPath "op" -}}
+{{-     $name  = onepasswordRead (printf "op://Personal/%s/full name" $opVault) | trim -}}
+{{-     $email = onepasswordRead (printf "op://Personal/%s/email" $opVault) | trim -}}
 {{-   else -}}
-{{-     $name  = onepasswordRead "op://Personal/Work Identity/full name" | trim -}}
-{{-     $email = onepasswordRead "op://Personal/Work Identity/email" | trim -}}
+{{-     $name  = promptStringOnce . "name"  "Your full name (op not installed; stored locally only)" -}}
+{{-     $email = promptStringOnce . "email" "Your email (op not installed; stored locally only)" -}}
 {{-   end -}}
 {{- end -}}
 
@@ -134,6 +148,7 @@
   hostname     = {{ $hostname | quote }}
   personal     = {{ $personal }}
   osid         = {{ $osID | quote }}
+  opVault      = {{ $opVault | quote }}
 
   [data.directories]
     tools_root     = "{{ $tools_root }}"
