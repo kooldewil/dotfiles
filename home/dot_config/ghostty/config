@@ -8,7 +8,7 @@ font-size = 13
 font-feature = -calt, -liga, -dlig
 
 # Theme — Catppuccin Mocha (matches fzf, tmux, delta)
-theme = catppuccin-mocha
+theme = catppuccin-macchiato
 
 # Window
 window-padding-x = 4
