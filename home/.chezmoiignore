@@ -26,6 +26,11 @@
 # README lives in the repo, not in $HOME
 README.md
 
+{{ if .ephemeral }}
+# No secrets on ephemeral machines
+.ssh/id_ed25519
+{{ end }}
+
 {{ if ne .chezmoi.os "darwin" }}
 # macOS-only — skip on non-macOS
 .zshrc

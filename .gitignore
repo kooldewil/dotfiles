@@ -9,6 +9,8 @@
 *private*
 *.pem
 *.key
+# chezmoi uses private_ prefix for 600-permission targets (content is a template, not a secret)
+!*private*.tmpl
 
 # Backup files
 *.bak
