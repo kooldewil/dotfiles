@@ -7,8 +7,8 @@ font-family = MesloLGS NF
 font-size = 13
 font-feature = -calt, -liga, -dlig
 
-# Theme — Catppuccin Mocha (matches fzf, tmux, delta)
-theme = catppuccin-macchiato
+# Theme — Catppuccin Macchiato (matches fzf, tmux, delta)
+theme = Catppuccin Macchiato
 
 # Window
 window-padding-x = 4
