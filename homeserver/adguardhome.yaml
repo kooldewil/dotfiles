@@ -245,6 +245,7 @@ user_rules:
 - '@@||mask-api.icloud.com^$important'
 - '@@||s.youtube.com^$important'
 - '@@||fonts.gstatic.com^$important'
+- '@@||backloop.dev^'
 - '||adservice.google.*^$important'
 - '||doubleclick.net^$important'
 - '||googleadservices.com^$important'
