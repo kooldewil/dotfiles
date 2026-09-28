@@ -85,7 +85,7 @@ Bear, rcmd, Velja, Kagi for Safari, Wipr, Baking Soda, Vinegar, Noir, Hyperduck,
 
 - **tmux** with tpm (via `.chezmoiexternal`) and a built-in keybinding cheatsheet in `025-tmux.sh.tmpl`
 - **Personal-only mise tools:** `yt-dlp`, `croc`
-- **Zsh plugins via zinit:** `fzf-tab` and `zsh-syntax-highlighting`. `zsh-autosuggestions` was listed here in May, but it's no longer in the config
+- **Zsh plugins via zinit:** `fzf-tab` and `zsh-syntax-highlighting`. `zsh-autosuggestions` was removed on purpose on 2026-05-12 (`a98ac7d`) as redundant with atuin + fzf-tab
 
 ---
 

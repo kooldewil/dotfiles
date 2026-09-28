@@ -63,7 +63,7 @@ Note on file location: Drew's `.chezmoiroot` points at `home/`, same as yours, b
 | Item | Description | Location |
 |---|---|---|
 | `yt-dlp`, `croc` (personal-only mise tools) | Not in Drew's tool list | `dot_config/mise/config.toml.tmpl` |
-| Minimal Brewfile-free bootstrap | Homebrew only installs `mise` + `1password-cli`; everything else via mise. Simpler than Drew's ~35-cask Brewfile, at the cost of not managing GUI apps declaratively | `.chezmoiscripts/darwin/` |
+| Bootstrap-time Brewfile | chezmoi scripts install only `mise` and the 1Password CLI; CLI tools come from mise. GUI apps come from a repo-root `Brewfile` (55 casks, 31 Mac App Store apps) that `install.sh` runs with `brew bundle` on first setup. Unlike Drew's `run_onchange` script, new Brewfile entries aren't installed by `chezmoi apply` | `Brewfile`, `install.sh`, `.chezmoiscripts/darwin/` |
 
 ---
 
