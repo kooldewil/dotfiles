@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "can you look at drews dotfiles and compare them with mine",
-      "expected_output": "A COMPARISON-Drewtopia.md file written to the chezmoi root with at least 4 sections: things Drew has that the user doesn't, things the user has Drew doesn't, structural differences table, and suggested adoptions. The file should include specific tools like jj, delta, AeroSpace, Ghostty, and neovim config on the Drew side; MacroWhisper and zsh-autosuggestions on the user side.",
+      "expected_output": "A COMPARISON-Drewtopia.md file written to the chezmoi root with at least 4 sections: things Drew has that the user doesn't, things the user has Drew doesn't, structural differences table, and suggested adoptions. As of 2026-09 the user has already adopted jj, delta, AeroSpace, Ghostty and a LazyVim config, so those should be treated as shared, not Drew-only. Drew-only items should include things like worktrunk, WSL/WezTerm support, fnox, and the Home Assistant / Obsidian MCP servers; user-only items should include MacroWhisper and Brewfile GUI apps such as BetterTouchTool.",
       "files": [],
       "expectations": [
         "A COMPARISON-Drewtopia.md file is written to the chezmoi source root",
@@ -12,8 +12,8 @@
         "The file contains a section about tools/configs the user has that Drew doesn't",
         "The file contains a structural differences table",
         "The file contains suggested adoptions",
-        "Jujutsu (jj) is mentioned as something Drew has",
-        "AeroSpace or a tiling WM is mentioned as something Drew has",
+        "jj and AeroSpace are not listed as things only Drew has (the user has both)",
+        "At least one of worktrunk, WSL/WezTerm support, fnox, or the Home Assistant/Obsidian MCP servers is mentioned as something Drew has",
         "MacroWhisper is mentioned as something the user has"
       ]
     },
