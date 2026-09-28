@@ -1,150 +1,103 @@
-# Dotfiles Comparison: You vs Drewtopia
+# Dotfiles Comparison: yours vs. Drewtopia/dotfiles
 
-*Generated: 2026-05-23 | Source: Drewtopia/dotfiles (main branch)*
+*Generated: 2026-07-24 | Source: Drewtopia/dotfiles (main branch, commit `20f62f3`) | Supersedes the 2026-05-23 version of this file — Drew's repo has changed substantially since then (worktrunk, cvault, self-authored Node.js hooks, Azure DevOps git integration, WSL support, and commit-check policy enforcement are all new additions).*
+
+Note on file location: Drew's `.chezmoiroot` points at `home/`, same as yours, but this file is written to the **repo root** (`~/.local/share/chezmoi/COMPARISON-Drewtopia.md`) rather than inside `home/` — putting it inside `home/` would make chezmoi treat it as a dotfile to apply to `~/COMPARISON-Drewtopia.md`.
 
 ---
 
 ## Section 1: Tools/configs Drew has that you don't
 
 ### Claude Code / AI tooling
-
 | Item | Description | Location |
-|------|-------------|----------|
-| Home Assistant MCP | Controls smart home devices from Claude | `dot_claude/mcp.json.tmpl` (conditional on `.personal`) |
-| Obsidian MCP | Reads/searches Obsidian vault from Claude | `dot_claude/mcp.json.tmpl` |
-| `superpowers` plugin | Official Claude Code marketplace plugin | `dot_claude/settings.json.tmpl` |
-| `context7` plugin | Official Claude Code marketplace plugin | `dot_claude/settings.json.tmpl` |
-| `security-guidance` plugin | Official Claude Code marketplace plugin | `dot_claude/settings.json.tmpl` |
-| Claude memory backup script | Backs up memory dir before chezmoi apply | `.chezmoiscripts/common/run_before_03-backup-claude-memory.sh` |
-| Caveman marketplace | Second Claude Code marketplace source | `dot_claude/settings.json.tmpl` |
-| Private vault symlinks | Memory, rules, agents in a separate encrypted repo | `dot_claude/symlink_memory.tmpl`, `symlink_rules.tmpl` |
-| External skills (claude-code-mastery) | Skills from TheDecipherist/claude-code-mastery via `.chezmoiexternal` | `.chezmoiexternal.toml.tmpl` |
+|---|---|---|
+| Self-authored Node.js hook suite (with unit tests) | `block-secrets.js`, `notify.js`, `post-edit-format.js`, `pre-bash-dispatcher.js`, `session-start-git-status.js`, `warn-derived-artifact.js`, `warn-edit-on-protected.js`, `warn-worktree-convention.js` | `dot_claude/hooks/` |
+| `stop-end-of-turn.js` quality gate | Runs lint/typecheck/secret-scan on every Stop event before Claude can end a turn | `dot_claude/hooks/stop-end-of-turn.js` |
+| `modify_settings.json.tmpl` | `jq` deep-merge of a managed settings floor into the *live* settings.json, so Claude's own runtime writes survive `chezmoi apply` | `dot_claude/modify_settings.json.tmpl` |
+| `cvault` CLI + `claude-vault` external repo | Memory/rules symlinked from a separate git repo, managed by a full custom CLI (status/diff/apply/update/sync/merge) | `dot_local/bin/executable_cvault`, `dot_claude/symlink_memory.tmpl` |
+| `git-commit-precheck.sh` + `commit-check`/`cchk.toml` | Lefthook/gitleaks-style pre-commit fallback specifically countering Claude bypassing hooks via `-c core.hooksPath=/dev/null`; enforces Conventional Branch naming | `dot_claude/executable_git-commit-precheck.sh`, `dot_config/commit-check/cchk.toml` |
+| Profile-gated plugin enablement | `always`/`personal`/`dev_computer` tables with inline rationale for retired plugins | `.chezmoidata/claude.toml` |
+| 11 plugin marketplaces (vs. your 6) | Includes `i-have-adhd`, `mattpocock`, `superpowers-extended`, `worktrunk` | `.chezmoidata/claude.toml` |
+| `worktrunk` | Worktree manager; places worktrees under `.claude/worktrees/<branch>`, LLM-generated commit/squash messages via hermetic `claude -p --model=haiku --safe-mode` | `dot_config/worktrunk/config.toml` |
+| `ha-mcp` (Home Assistant) + `mcp-obsidian` MCP servers | You only have `sequential-thinking` | `dot_claude/mcp.json.tmpl` |
+| GitHub Copilot instructions | Parallel/lighter version of CLAUDE.md ported for Copilot | `dot_github/copilot-instructions.md.tmpl` |
+| `close`, `reorganize-memory`, `audit-skill-repos`, `audit-rules-and-skills` skills | Elaborate session-closeout (Open Brain capture, memory writes, commit splitting, SESSION_LOG.md) and memory/rules hygiene tooling | `dot_claude/skills/` |
 
-### Dev tooling
-
+### Dev tooling / VCS
 | Item | Description | Location |
-|------|-------------|----------|
-| `fnox` | Secrets injection into shell environment | `dot_config/shell/020-shell-tools.sh.tmpl` |
-| `pay-respects` | Command corrector (like `thefuck`) | `dot_config/shell/020-shell-tools.sh.tmpl` |
-| `topgrade` reminder script | Post-apply reminder to run `topgrade` | `.chezmoiscripts/common/run_after_99-topgrade-reminder.sh.tmpl` |
-| `run_onchange_after_30-set-git-origin` | Auto-sets git remote origin to SSH on apply | `.chezmoiscripts/common/` |
-| `pnpm-globals` script | Configures pnpm global packages on apply | `.chezmoiscripts/common/run_onchange_after_15-pnpm-globals.sh.tmpl` |
-| Windows Claude install script | Installs Claude Code on Windows via chezmoi | `.chezmoiscripts/common/run_onchange_after_40-install-claude-code.ps1.tmpl` |
-
-### SSH / Secrets
-
-| Item | Description | Location |
-|------|-------------|----------|
-| RSA key pair managed | Both Ed25519 + RSA managed in chezmoi | `dot_ssh/id_rsa.pub.tmpl`, `dot_ssh/private_id_rsa.tmpl` |
-| Private SSH key in chezmoi | Private key stored encrypted via 1Password+chezmoi | `dot_ssh/private_id_ed25519.tmpl` |
-| WSL GitHub via port 443 | Routes GitHub SSH through port 443 to bypass firewalls | `dot_ssh/config.tmpl` |
-| Azure DevOps SSH | RSA key support for Azure DevOps (no Ed25519) | `dot_ssh/config.tmpl` |
+|---|---|---|
+| Azure DevOps git integration | `useHttpPath`, WSL→Windows `ssh.exe` routing, custom `.git-azdo-helper.sh`, conditional SSH commit signing via `includeIf` | `dot_config/git/config.tmpl`, `executable_dot_git-azdo-helper.sh` |
+| Repo self-governance | `.changeset/` + `CHANGELOG.md` for versioning the dotfiles repo itself, `tests/` with Pester unit tests for Windows-relocation logic, `CONTEXT.md` domain vocabulary, `AGENTS.md` + `docs/agents/` (issue-tracker, triage-labels, domain docs) | repo root, `docs/` |
+| `fnox` secrets-manager shell activation | Secrets rendered at chezmoi apply-time into a private shell file (vs. your runtime 1Password pull) | `dot_config/shell/020-shell-tools.sh.tmpl`, `private_015-vault.sh.tmpl` |
 
 ### Terminal & shell
-
 | Item | Description | Location |
-|------|-------------|----------|
-| `zsh-active-cheatsheet` via external | External chezmoi-managed zsh cheatsheet integration | `.chezmoiexternal.toml.tmpl` |
-| Catppuccin themes via external | eza/yazi/btop themes managed as external files | `.chezmoiexternal.toml.tmpl` |
-| CUE tool | Data constraint language (Linux only) | `.chezmoiexternal.toml.tmpl` |
+|---|---|---|
+| WezTerm config | Secondary terminal, default on work Windows machines (routes into WSL2 Ubuntu domain) | `dot_wezterm.lua.tmpl` |
+| Full WSL support | `.wslconfig` tuning (no GPU, no DNS proxy, no localhost forwarding), `.bashrc`/`.profile` for WSL shells | `dot_wslconfig.tmpl`, `dot_bashrc.tmpl`, `dot_profile.tmpl` |
+| `btop`, `navi` configs | You have neither | `dot_config/btop/`, `dot_config/navi/` |
 
-### Automation (chezmoi scripts)
-
+### Automation (chezmoi scripts) / Windows
 | Item | Description | Location |
-|------|-------------|----------|
-| `.chezmoiexternal.toml.tmpl` | Manages Oh-My-Zsh, p10k, plugins, tmux plugins, themes as externals | repo root |
-| Darwin: `run_onchange_before_20-install-1password.sh` | Auto-installs 1Password on macOS | `.chezmoiscripts/darwin/` |
+|---|---|---|
+| Corporate-Windows "relocation" model | Detects locked-down endpoint-security path restrictions and relocates tool installs to a whitelisted folder; combines Scoop + Winget | `.chezmoi.toml.tmpl`, `.chezmoitemplates/windows-relocation` |
+| `executable_op.tmpl` | 1Password CLI shim through Windows interop for native Linux/WSL `op` | `dot_local/bin/executable_op.tmpl` |
+| Dock cleanup, VS Code extension relocation, font registration, PowerShell module install | Additional bootstrap scripts you don't have | `.chezmoiscripts/darwin/`, `.chezmoiscripts/windows/` |
+
+### Apps (GUI)
+| Item | Description | Location |
+|---|---|---|
+| Full Brewfile with ~35 casks | Arc, Hammerspoon, Hazel, Home Assistant, Plex, Raindrop.io, Tailscale, VS Code, WezTerm, Zen, etc. — with inline comments on deliberately excluded casks | `.chezmoiscripts/darwin/run_onchange_before_10-install-brew-packages.sh.tmpl` |
+| VS Code `mcp.json.tmpl` | Windows work-machine specific | `Library/Application Support/Code/` |
 
 ---
 
 ## Section 2: Tools/configs you have that Drew doesn't
 
-### Apps / GUI
-
+### Claude Code / AI tooling
 | Item | Description | Location |
-|------|-------------|----------|
-| MacroWhisper config | Voice dictation app configuration | `dot_config/macrowhisper/macrowhisper.json` |
-| Lazygit config | TUI git client (Drew uses via LazyVim but no standalone config) | `dot_config/lazygit/empty_config.yml` |
-
-### Terminal & shell
-
-| Item | Description | Location |
-|------|-------------|----------|
-| `tmux.reset.conf` | Tmux reset/defaults file separate from main config | `dot_config/tmux/tmux.reset.conf` |
-| `070-functions.sh` | Utility shell functions: `mkcd`, `tmpd`, `up`, `cl`, `extract`, `serve`, `repos` | `dot_config/shell/070-functions.sh` |
-| `010-history.sh` | Dedicated history config module (HISTSIZE=50000, timestamps) | `dot_config/shell/010-history.sh` |
-| `020-completion.sh` | Dedicated zsh completion tuning module | `dot_config/shell/020-completion.sh` |
-| `path-management.sh.tmpl` | Standalone path management script | `dot_config/path-management.sh.tmpl` |
+|---|---|---|
+| `dotfiles-compare`, `fix-ebooks`, `handoff`, `jumpdesktop-teams-diagnose` skills | No overlap with Drew's custom skill set at all | `dot_claude/skills/` |
 
 ### Dev tooling
-
 | Item | Description | Location |
-|------|-------------|----------|
-| television cable configs | Custom TV channel definitions for fuzzy finding | `dot_config/television/cable/*.toml` |
-| Glow config | Markdown terminal viewer configuration | `dot_config/glow/glow.yml` |
-
-### Claude Code / AI tooling
-
-| Item | Description | Location |
-|------|-------------|----------|
-| `fix-ebooks` skill | Fixes EPUB formatting issues | `dot_claude/skills/fix-ebooks/SKILL.md` |
-| `handoff` skill | Compact conversation for agent handoff | `dot_claude/skills/handoff/SKILL.md` |
-| `dotfiles-compare` skill | This very skill | `dot_claude/skills/dotfiles-compare/SKILL.md` |
+|---|---|---|
+| `yt-dlp`, `croc` (personal-only mise tools) | Not in Drew's tool list | `dot_config/mise/config.toml.tmpl` |
+| Minimal Brewfile-free bootstrap | Homebrew only installs `mise` + `1password-cli`; everything else via mise. Simpler than Drew's ~35-cask Brewfile, at the cost of not managing GUI apps declaratively | `.chezmoiscripts/darwin/` |
 
 ---
 
 ## Section 3: Structural differences
 
 | Area | You | Drew |
-|------|-----|------|
-| Shell framework | Oh-My-Zsh + Powerlevel10k + Zinit | Oh-My-Zsh + Powerlevel10k + Zinit |
-| Shell modules | 8 numbered files (000–070) | 7 numbered files (000–050) |
-| Terminal | Ghostty (catppuccin-macchiato) | Ghostty (different keybindings) |
-| Primary VCS | Git (+ jj on dev machines) | Git (+ jj on dev machines) |
-| Git config location | `dot_gitconfig.tmpl` (repo root) | `dot_config/git/config.tmpl` (XDG) |
-| Cross-platform | macOS + Windows | macOS + Linux + Windows + WSL |
-| Secret management | 1Password (SSH agent, git signing) | 1Password (SSH agent, git signing, fnox) |
-| SSH keys tracked | Public key + authorized_keys only | Public + private keys + authorized_keys |
-| SSH key types | Ed25519 only | Ed25519 + RSA (Azure DevOps compat) |
-| Commit signing | SSH via 1Password | SSH via 1Password |
-| Chezmoi scripts | 5 scripts | 10+ scripts (+ git-origin, pnpm, topgrade, Claude install, memory backup) |
-| `.chezmoiexternal` | Not used | Manages OMZ, p10k, plugins, tmux plugins, themes, CUE, Neovim |
-| MCP servers | 1 (sequential-thinking) | 3 (sequential-thinking + ha-mcp + mcp-obsidian) |
-| Claude marketplaces | 1 (official) | 2 (official + caveman) |
-| Claude plugins | core set | core set + superpowers + context7 + security-guidance |
-| Claude memory | Direct files in `~/.claude/memory/` | Private encrypted vault repo via symlinks |
-| Leaderkey / launcher | Raycast + LeaderKey | Raycast + LeaderKey |
-| Editor | Neovim (LazyVim, 30+ extras) | Neovim (LazyVim, 37 extras) |
-| Window manager | AeroSpace | AeroSpace |
+|---|---|---|
+| Shell framework | oh-my-zsh + Powerlevel10k + Zinit | Same, plus `fnox` secrets activation |
+| Terminal | Ghostty only | Ghostty (macOS) + WezTerm (Windows/WSL) |
+| Primary VCS workflow | jj w/ custom revsets + Claude hooks (`jj-block-trunk`, `jj-describe-claude`) | jj w/ similar revset/alias design, plus Azure DevOps git config for work |
+| Git config location | `dot_gitconfig.tmpl` (repo root) | `dot_config/git/config.tmpl` (XDG path) + `config.local` include |
+| Cross-platform | macOS + Windows (Scoop) | macOS + Windows (Scoop+Winget) + WSL2 + "relocated" corporate Windows |
+| Secret management | 1Password, tokens pulled at shell **runtime** | 1Password + `fnox`, secrets rendered at chezmoi **apply-time** |
+| Commit signing | SSH via 1Password (personal machines) | Same, plus conditional Azure DevOps signing path via `includeIf` |
+| Chezmoi scripts | mise bootstrap → 1Password CLI → kanata/Karabiner → Claude marketplace sync → skills install | Same categories, plus Dock cleanup, VS Code extension relocation, font registration, PowerShell modules |
+| Claude Code hooks | Shell/Python, sourced from an external repo via `.chezmoiexternal.toml` | Self-authored Node.js, with unit tests, in-repo |
+| Claude memory sync | Two hook scripts syncing `~/.claude/memory` to a GitHub repo | Symlinked external `claude-vault` repo + dedicated `cvault` CLI |
+| Leaderkey / launcher | Present, same action-tree structure (browsers/open/raycast/screenshot/window mgmt via Rectangle Pro) | Present, same structure, different app bindings (adds Jump Desktop shortcut for work) |
 
 ---
 
 ## Section 4: Suggested adoptions (ranked)
 
-**1. `.chezmoiexternal.toml.tmpl` for external managed files**
-Drew manages Oh-My-Zsh, Powerlevel10k, tmux plugins, and Catppuccin themes as chezmoi externals rather than assuming they're pre-installed. This means `chezmoi apply` on a fresh machine installs everything automatically — no manual plugin installs required.
+**1. `stop-end-of-turn.js`-style quality gate**
+A Stop hook running lint/typecheck/secret-scan before Claude can end a turn. Strengthens your existing `end-of-turn.sh`/`after-edit.sh` hooks by catching broken code before you see it.
 
-**2. Private vault repo for Claude memory/rules**
-Drew symlinks `~/.claude/memory/` and `~/.claude/rules` to a separate private encrypted git repo. Your memory currently lives in `~/.claude/memory/` untracked. Moving it to a private vault means memory syncs across machines automatically and is backed up, while staying out of your public dotfiles.
+**2. Pre-commit hook-bypass countermeasure**
+Your `settings.json.tmpl` denies `git push` outright, but nothing stops Claude from disabling your *other* local git hooks via `-c core.hooksPath=/dev/null`. Drew's `git-commit-precheck.sh` fallback closes that gap.
 
-**3. More MCP servers (Home Assistant + Obsidian)**
-Drew conditionally enables ha-mcp for smart home control and mcp-obsidian for note access from Claude. If you use Home Assistant or Obsidian, these give Claude direct access to your home and knowledge base.
+**3. `modify_settings.json.tmpl` deep-merge pattern**
+Claude Code writes to `settings.json` at runtime (plugin toggles, telemetry state); a plain chezmoi template will stomp those writes on the next `apply`. The `jq`-merge approach lets both sides coexist.
 
-**4. `fnox` for secrets injection**
-Drew uses `fnox` to inject secrets into the shell environment at load time (from 1Password), keeping secret env vars like `$ANTHROPIC_API_KEY` and `$GITHUB_TOKEN` out of dotfiles while making them available to all tools.
+**4. Own your Claude Code hooks instead of vendoring them externally**
+You currently pull `block-secrets.py`, `notify.sh`, etc. from `TheDecipherist/claude-code-mastery` via `.chezmoiexternal.toml`. Drew's in-repo, tested, self-authored equivalents remove that supply-chain dependency and give you full control over behavior.
 
-**5. `run_before` Claude memory backup + `run_onchange` for git origin**
-Two small automation improvements: backing up Claude memory before every `chezmoi apply` (guards against symlink replacement accidents), and auto-setting the git remote origin to SSH on apply (so a fresh clone uses the right remote without manual steps).
-
----
-
-## Direct answer: SSH question
-
-**Yes** — Drew fully manages SSH as dotfiles via chezmoi:
-- `dot_ssh/config.tmpl` — host configs, 1Password agent, WSL/firewall workarounds, Azure DevOps
-- `dot_ssh/id_ed25519.pub.tmpl` — public key templated from 1Password
-- `dot_ssh/private_id_ed25519.tmpl` — **private key** stored encrypted via chezmoi+1Password
-- `dot_ssh/id_rsa.pub.tmpl` + `private_id_rsa.tmpl` — RSA pair for Azure DevOps
-- `dot_ssh/authorized_keys.tmpl`
-
-You also manage SSH via chezmoi (`dot_ssh/config.tmpl`, `id_ed25519.pub.tmpl`, `authorized_keys.tmpl`) but don't track the private key. Drew goes one step further by storing the private key encrypted in the repo, pulled from 1Password at apply time.
+**5. `worktrunk`**
+Given you already run a jj + git-worktree workflow (your `jj-block-trunk`/`jj-describe-claude` hooks), worktrunk's LLM-generated commit/squash messages and standardized worktree location (`.claude/worktrees/<branch>`) is a low-risk addition that fits what you've already built.
