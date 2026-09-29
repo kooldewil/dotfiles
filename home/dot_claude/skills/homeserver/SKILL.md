@@ -5,13 +5,35 @@ description: Manage Shaunak's Proxmox homeserver, AdGuard Home, ASUS router, and
 
 # Homeserver
 
+## Change discipline (read before changing anything)
+
+AdGuard is DNS for the whole network: a bad change takes every device offline, including the one you'd use to fix it. When a step below feels skippable, flag it and let Shaunak decide instead of skipping it.
+
+1. **Prefer the API over editing files.** AdGuard, Proxmox and the router all have one (recipes below). API changes are atomic and don't need a restart.
+2. **If you must edit a service's own config file** (e.g. `AdGuardHome.yaml`), don't edit it under the running process. The service can rewrite the file on shutdown or fail to start:
+   ```bash
+   ssh root@192.168.50.3 'cd /opt/AdGuardHome &&
+     cp -p AdGuardHome.yaml AdGuardHome.yaml.bak-$(date +%Y%m%d)-<change> &&
+     systemctl stop AdGuardHome && <edit> && systemctl start AdGuardHome &&
+     sleep 5 && systemctl is-active AdGuardHome'
+   dig +short @192.168.50.3 www.bbc.com   # must still resolve
+   ```
+3. **Have the rollback ready before the change**, as one command, and make sure it doesn't depend on DNS working. Use IPs, not `.home` names:
+   ```bash
+   ssh root@192.168.50.3 'cd /opt/AdGuardHome && systemctl stop AdGuardHome &&
+     cp -p AdGuardHome.yaml.bak-<...> AdGuardHome.yaml && systemctl start AdGuardHome'
+   ```
+4. **Back up before changing a container.** Use `pct snapshot VMID NAME` where snapshots work (CT 100–103). Where they don't (CT 104, bind mount), `cp -p file file.bak.pre-<change>` before editing, or `vzdump` for larger changes.
+5. **After an `/etc/fstab` change on the host**, `pct stop` then `pct start` any container with a bind mount on that path (CT 104). A `pct reboot` isn't enough.
+6. Read a running service's real environment with `tr "\0" "\n" < /proc/$(pgrep -of <pattern>)/environ`.
+
 ## Infrastructure
 
-| Service | URL | IP | Credentials |
+| Service | URL | IP | Credentials (1Password) |
 |---------|-----|----|-------------|
-| Proxmox | https://proxmox.home:8006 | 192.168.50.2 | See memory: homeserver-credentials |
-| AdGuard Home | http://adguard.home | 192.168.50.3 | See memory: homeserver-credentials |
-| ASUS Router | http://192.168.50.1 | 192.168.50.1 | See memory: homeserver-credentials |
+| Proxmox | https://proxmox.home:8006 | 192.168.50.2 | `op://Private/Proxmox` (username `root`, realm `@pam`) |
+| AdGuard Home | http://adguard.home | 192.168.50.3 | `op://Private/Adguard Home` |
+| ASUS Router | http://192.168.50.1 | 192.168.50.1 | `op://Private/Asus Router` (read the lockout warning before scripting a login) |
 
 ### LXC Containers (Proxmox node: `homeserver`)
 
@@ -33,63 +55,95 @@ description: Manage Shaunak's Proxmox homeserver, AdGuard Home, ASUS router, and
 
 ## Authentication
 
+Credentials live in 1Password and are read at runtime with `op read` (Touch ID prompt via the desktop-app integration). Never write them to files, the skill, memory, or command output. Shell state doesn't persist between Bash calls, so set the variable in the same call that uses it.
+
 ### Proxmox API
 ```bash
 RESPONSE=$(curl -sk -X POST "https://192.168.50.2:8006/api2/json/access/ticket" \
-  -d "username=root@pam&password=PASSWORD")
-TICKET=$(echo $RESPONSE | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['ticket'])")
-CSRF=$(echo $RESPONSE | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['CSRFPreventionToken'])")
+  --data-urlencode "username=$(op read 'op://Private/Proxmox/username')@pam" \
+  --data-urlencode "password=$(op read 'op://Private/Proxmox/password')")
+TICKET=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['ticket'])")
+CSRF=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['CSRFPreventionToken'])")
 # Use: -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF"
 ```
+SSH (`root@192.168.50.2`, key auth) needs no password and covers most tasks via `pct`.
 
 ### ASUS Router
+Verified 2026-09-29. The form must be URL-encoded like the browser sends it (`--data-urlencode`): with plain `-d`, the `=` padding in the base64 value can break the login.
 ```bash
-TOKEN=$(curl -s -X POST "http://192.168.50.1/login.cgi" \
+# 1. Check the failed-login counter first (no login attempt). Only proceed if error_num is 0.
+curl -s http://192.168.50.1/Main_Login.asp | grep -o '"error_status": [0-9]*, "last_time_lock_warning": [0-9]*, "error_num": [0-9]*'
+# 2. Log in
+AUTH=$(printf '%s:%s' "$(op read 'op://Private/Asus Router/username')" "$(op read 'op://Private/Asus Router/password')" | base64)
+TOKEN=$(curl -s -D - -o /dev/null -X POST "http://192.168.50.1/login.cgi" \
   -H "Referer: http://192.168.50.1/Main_Login.asp" \
-  -d "group_id=&action_mode=&action_script=&action_wait=5&current_page=Main_Login.asp&next_page=index.asp&login_authorization=$(echo -n 'admin:PASSWORD' | base64)" \
-  -D /dev/stderr 2>&1 1>/dev/null | grep -oP 'asus_token=\K[^;]+')
+  --data-urlencode "action_wait=5" --data-urlencode "current_page=Main_Login.asp" --data-urlencode "next_page=index.asp" \
+  --data-urlencode "login_authorization=$AUTH" --data-urlencode "login_captcha=" \
+  | sed -n 's/.*asus_token=\([^;]*\).*/\1/p')
+[ -n "$TOKEN" ] || echo "login FAILED - stop, do not retry"
 # Use: -b "asus_token=$TOKEN" -H "Referer: http://192.168.50.1/"
+# 3. Log out when done (only one admin session is allowed at a time)
+curl -s -o /dev/null -b "asus_token=$TOKEN" -H "Referer: http://192.168.50.1/" http://192.168.50.1/Logout.asp
 ```
+**Lockout danger:** the router counts failed logins. At 2 it demands a CAPTCHA (scripts can't log in), at 5 it locks for a few minutes, and at **10 it locks permanently until the router is factory reset**. A successful login resets the counter. Make **one** attempt at most, only when `error_num` is 0. If it fails, stop and ask Shaunak to log in via the browser.
+
+After Shaunak edits a 1Password item, read it with `op read --cache=false`, because `op` can serve the old value for a short time.
 
 ### AdGuard Home
 ```bash
-# Basic auth on all requests
-curl -u "USERNAME:PASSWORD" http://192.168.50.3/control/status
+AG="$(op read 'op://Private/Adguard Home/username'):$(op read 'op://Private/Adguard Home/password')"
+curl -s -u "$AG" http://192.168.50.3/control/status   # basic auth on all requests
 ```
 
 ## Common Tasks
 
+The AdGuard recipes assume `AG` is set as above.
+
 ### AdGuard — check status & protection
 ```bash
-curl -s -u "USER:PASS" http://192.168.50.3/control/status | python3 -m json.tool
+curl -s -u "$AG" http://192.168.50.3/control/status | python3 -m json.tool
 ```
+
+### AdGuard — read / replace custom filtering rules (no restart)
+```bash
+curl -s -u "$AG" http://192.168.50.3/control/filtering/status \
+  | python3 -c "import sys,json; print('\n'.join(json.load(sys.stdin)['user_rules']))" > rules.bak.txt
+# edit a copy, then send the FULL list back (it replaces all rules):
+python3 -c "import sys,json; print(json.dumps({'rules': open('rules.new.txt').read().splitlines()}))" \
+  | curl -s -u "$AG" -X POST http://192.168.50.3/control/filtering/set_rules \
+      -H "Content-Type: application/json" -d @-
+```
+Keep `rules.bak.txt` in the scratchpad as the rollback.
 
 ### AdGuard — enable/disable protection
 ```bash
-curl -s -u "USER:PASS" -X POST http://192.168.50.3/control/protection \
+curl -s -u "$AG" -X POST http://192.168.50.3/control/protection \
   -H "Content-Type: application/json" -d '{"enabled": true, "duration": 0}'
 ```
 
 ### AdGuard — update filters
 ```bash
-curl -s -u "USER:PASS" -X POST http://192.168.50.3/control/filtering/refresh \
+curl -s -u "$AG" -X POST http://192.168.50.3/control/filtering/refresh \
   -H "Content-Type: application/json" -d '{"whitelist": false}'
-curl -s -u "USER:PASS" -X POST http://192.168.50.3/control/filtering/refresh \
+curl -s -u "$AG" -X POST http://192.168.50.3/control/filtering/refresh \
   -H "Content-Type: application/json" -d '{"whitelist": true}'
 ```
 
-### AdGuard — trigger self-update
+### AdGuard — update AdGuard Home itself
 ```bash
-curl -s -u "USER:PASS" http://192.168.50.3/control/version.json?recheck=true
-curl -s -u "USER:PASS" -X POST http://192.168.50.3/control/update
+ssh root@192.168.50.2 'pct exec 100 -- sh -c "cd /opt/AdGuardHome && ./AdGuardHome --update"'
 ```
+DNS takes a few seconds to answer after the restart while filters reload.
 
 ### AdGuard — add client exemption (bypass all filtering)
 ```bash
-curl -s -u "USER:PASS" -X POST http://192.168.50.3/control/clients/add \
+curl -s -u "$AG" -X POST http://192.168.50.3/control/clients/add \
   -H "Content-Type: application/json" \
   -d '{"name":"NAME","ids":["MAC1","MAC2"],"use_global_settings":false,"filtering_enabled":false,"parental_enabled":false,"safebrowsing_enabled":false,"safesearch":{"enabled":false},"use_global_blocked_services":true,"blocked_services":[],"upstreams":[],"tags":[]}'
 ```
+
+### AdGuard — search the query log
+The API's `/control/querylog` is the live view. The on-disk log (`/opt/AdGuardHome/data/querylog.json`, one JSON object per line) lags by up to 1000 entries (`size_memory`), so after asking Shaunak to reproduce something, poll until its last timestamp passes the time of the test.
 
 ### Proxmox — list containers
 ```bash
@@ -111,8 +165,8 @@ curl -sk -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF" \
 curl -sk -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF" \
   -X PUT "https://192.168.50.2:8006/api2/json/nodes/homeserver/lxc/VMID/resize" \
   -d "disk=rootfs&size=XG"
-# After resize, SSH to Proxmox host and run resize2fs inside the container:
-# ssh root@192.168.50.2 "pct exec VMID -- resize2fs /dev/sda"
+# Then grow the filesystem inside the container:
+ssh root@192.168.50.2 "pct exec VMID -- resize2fs /dev/sda"
 ```
 
 ### SSH — exec command in any container
@@ -129,34 +183,53 @@ curl -s -b "asus_token=$TOKEN" -H "Referer: http://192.168.50.1/" \
   "http://192.168.50.1/appGet.cgi?hook=get_clientlist()"
 ```
 
-### Router — set static DHCP lease
+### Router — read settings (nvram)
 ```bash
-# Format: <MAC>HOSTNAME>IP>
+# One key per request; multiple nvram_get() hooks in one call only return the first
+curl -s -b "asus_token=$TOKEN" -H "Referer: http://192.168.50.1/" \
+  "http://192.168.50.1/appGet.cgi?hook=nvram_get(dhcpd_dns_router)"
+```
+Useful keys: `dhcp_start`, `dhcp_end`, `dhcp_dns1_x`, `dhcp_dns2_x`, `dhcpd_dns_router` (advertise router as DNS: must be `0`), `dhcp_static_x` (manual assignment on/off), `dhcp_staticlist`.
+
+### Router — set static DHCP lease
+Entry format on this firmware (it has per-entry DNS, `dhcp_static_dns`): `<MAC>IP>DNS>HOSTNAME`, with each entry starting with `<`. The web UI columns are in that order: IP Address, DNS Server, Host Name. `dhcp_static_x=1` turns manual assignment on. Read the current `dhcp_staticlist` first, because the POST replaces the whole list.
+```bash
 curl -s -b "asus_token=$TOKEN" -H "Referer: http://192.168.50.1/" \
   -X POST "http://192.168.50.1/apply.cgi" \
-  -d "action_mode=apply&action_script=restart_net&action_wait=5&current_page=Advanced_DHCP_Content.asp&dhcp_staticlist=ENCODED_LIST"
+  --data-urlencode "action_mode=apply" --data-urlencode "action_script=restart_net" --data-urlencode "action_wait=5" \
+  --data-urlencode "current_page=Advanced_DHCP_Content.asp" --data-urlencode "dhcp_static_x=1" \
+  --data-urlencode "dhcp_staticlist=<AA:BB:CC:DD:EE:FF>192.168.50.X>>hostname"
 ```
+`restart_net` briefly drops the network for every client. Tell Shaunak before running it.
 
 ## Known Config
 
-- **AdGuard filter update schedule**: weekly (168h)
-- **AdGuard query log retention**: 30 days
-- **AdGuard stats retention**: 30 days
-- **AdGuard version**: v0.107.79 (updated 2026-09-28 via `pct exec 100 -- sh -c "cd /opt/AdGuardHome && ./AdGuardHome --update"` — CLI updater, no API creds needed; DNS takes a few seconds to answer after restart while filters reload)
-- **Proxmox**: PVE 9.2.20, kernel 7.0.14-19-pve (2026-09-28). Debian 13 trixie. Repo: `/etc/apt/sources.list.d/proxmox.sources` (trixie, pve-no-subscription); enterprise/ceph sources are `.disabled`. Before 2026-09-28 the repo wrongly pointed at `bookworm` (PVE 8), so PVE packages silently got no updates — check `apt-cache policy pve-manager` if updates look suspiciously empty. Always use `apt-get dist-upgrade` on the host, never plain `upgrade`.
-- **Container OS**: all CTs are Debian 13 trixie; update with `apt-get dist-upgrade` via `pct exec`
-- **Container onboot**: all CTs (100–104) have `onboot: 1` (CT 103 was missing it until 2026-09-28)
-- **Snapshots before updates**: `pct snapshot VMID NAME` works for CT 100–103 (LVM-thin). CT 104 can't be snapshotted (bind mount `mp0`) — use `vzdump 104 --mode stop --storage local --compress zstd` instead (backs up rootfs only, not the TM disk)
-- **Outage 2026-09-14 → 09-24**: host went down uncleanly (journal just stops, no shutdown messages); cause unknown (power loss or hard hang). Came back after a manual restart.
-- **Miniflux (CT 101)**: installed from GitHub release `.deb` (`miniflux_X.Y.Z_amd64.deb`, not an apt repo). Version 2.3.3 (2026-09-28). PostgreSQL DB `miniflux_db`; config `/etc/miniflux.conf`. Migrations are NOT automatic — after upgrading run `miniflux -c /etc/miniflux.conf -migrate` then restart, or the service fails with "database schema is not up to date". Health: `http://192.168.50.4:8080/healthcheck`
-- **FreshRSS (CT 102)**: tarball install at `/opt/freshrss` (no git), owned `www-data`, Apache + PostgreSQL DB `freshrss`, user `shaunakt`. Version 1.30.0 (2026-09-28). Upgrade: extract release into a new dir excluding `data/`, copy old `data/` + extensions in, `chown -R www-data`, swap dirs. Check with `php cli/health.php` as www-data. Feeds refresh via `/etc/cron.d/freshrss-actualize` every 15 min. Since 1.30.0 it blocks local-network feed URLs by default.
-- **RSSHub (CT 103)**: git checkout of `DIYgod/RSSHub` at `/opt/rsshub`, run by `rsshub.service` (`node dist/index.mjs`, port 1200). Build with **pnpm via corepack**, not npm (npm crashes with `Cannot read properties of null (reading 'edgesOut')`): `COREPACK_ENABLE_DOWNLOAD_PROMPT=0 CI=true corepack pnpm install --frozen-lockfile && corepack pnpm run build`. Safe upgrade pattern: build in a separate clone (`/opt/rsshub-next`), smoke-test with `PORT=1201 node dist/index.mjs`, then swap dirs and restart. CT disk is 10 GB — watch space (two checkouts ≈ 5 GB).
-- **Pending cleanup (rollback points from 2026-09-28 updates, safe to delete after ~2026-10-05 if nothing broke)**: snapshots `pre_update_20260928` on CT 100–103; CT 104 vzdump on `local` storage; CT 101 `/root/miniflux-db-pre-2.3.3.sql.gz`; CT 102 `/root/freshrss-*-pre-1.30.0.*` + `/opt/freshrss-1.29.1-old`; CT 103 `/opt/rsshub-old-0788983ea` (2.4 GB) + `/root/rsshub-dist-0788983ea`; host `/root/pve-no-subscription.list.bookworm.bak`
-- **Local hook**: a Claude Code hook blocks `rm -rf` commands — design update steps around `mv`/new dirs instead
-- **ASUS router**: RT-AX95Q, firmware 3.0.0.4_388_24814-g4979b32 — confirmed up to date via ASUS update-check API on 2026-07-21
-- **Work laptop filtering**: changed 2026-07-29 — no longer a full bypass. Client entry keyed by both of its MACs (see memory) with `use_global_settings: true`, so it's now filtered by the same global blocklists as every other device. (History: briefly had `filtering_enabled: false` as a blanket bypass, and briefly also had its two static IPs added to `ids` to work around an AdGuard rDNS auto-client matching bug; both of those were reverted on 2026-07-29 at Shaunak's request. He now wants to see what gets blocked and unblock specific domains/rules manually as issues come up, rather than exempting the whole device.)
-- **iCloud Private Relay blocked network-wide** (2026-09-29): user rules `||mask.icloud.com^$important` and `||mask-h2.icloud.com^$important` (previously these were `@@` allow rules). Apple devices then skip Private Relay / "Limit IP Address Tracking" on home Wi-Fi, so Safari's tracker/ad lookups hit AdGuard instead of Apple's relay (symptom was: BBC ads on iPhone, not iPad, with no ad-domain queries in the log). `mask-api.icloud.com` is still allowed. Backup: `/opt/AdGuardHome/AdGuardHome.yaml.bak-20260929-privaterelay`. No API creds needed — edit `user_rules` in the YAML and `systemctl restart AdGuardHome`. Note the on-disk query log lags (flushed every 1000 entries, `size_memory`).
-- **CT 100 disk**: 6 GB (expanded from 2 GB on 2026-07-06)
-- **CT 100 memory**: 2 GB (raised from 512 MB on 2026-07-15 — AdGuardHome was being repeatedly OOM-killed by the memory cgroup at 512 MB, which caused the web UI/API to hang and look like a login failure)
-- **SSH access**: key (`~/.ssh/id_ed25519`) works on Proxmox host (`192.168.50.2`) and AdGuard container (`192.168.50.3`); reach other containers via `pct exec` through Proxmox host
-- **Time Machine SSD**: Sabrent SB-2130-1TB, was direct-attached to the Mac Mini, moved to the homeserver on 2026-07-21. Physically attached to the Proxmox host as `/dev/sdb`, reformatted from APFS to a single ext4 partition (old local backup history was wiped intentionally), mounted at `/mnt/tm-disk` on the host (in `/etc/fstab` by UUID), owned by `100000:100000` so CT104 (unprivileged) can write to it, bind-mounted into CT104 at `/srv/timemachine` via `mp0`. Samba in CT104 shares `/srv/timemachine/backup` as `[TimeMachine]` with `vfs objects = catia fruit streams_xattr` and `fruit:time machine = yes` (Apple's Time Machine-over-SMB extensions). Single Samba user `tm` is shared across all Macs backing up to it — Time Machine automatically creates a separate sparse bundle per machine, so this supports multiple Macs (Mac Mini + MBP M1) without conflict.
+Current state only. For when and why something changed, see `git log -p` on this file.
+
+### Host and containers
+- **Proxmox**: PVE 9.2.20, kernel 7.0.14-19-pve, Debian 13 trixie. Repo `/etc/apt/sources.list.d/proxmox.sources` (trixie, pve-no-subscription; enterprise/ceph are `.disabled`). If updates look suspiciously empty, check `apt-cache policy pve-manager`: the repo once pointed at the wrong Debian release. Always `apt-get dist-upgrade`, never plain `upgrade`.
+- **Containers**: all Debian 13 trixie, update with `apt-get dist-upgrade` via `pct exec`. All have `onboot: 1`.
+- **Snapshots**: `pct snapshot` works on CT 100–103 (LVM-thin). CT 104 can't be snapshotted (bind mount `mp0`), so use `vzdump 104 --mode stop --storage local --compress zstd` (rootfs only, not the TM disk).
+- **SSH**: key `~/.ssh/id_ed25519` works on the Proxmox host (192.168.50.2) and CT 100 (192.168.50.3). Reach the other containers via `pct exec`.
+- **Local hook**: a Claude Code hook blocks `rm -rf`, so design update steps around `mv` and new dirs.
+- **Unexplained outage 2026-09-14 → 09-24**: host went down uncleanly (journal just stops). Power loss or hard hang, cause unknown.
+- **Pending cleanup** (rollback points from the 2026-09-28 updates; delete after ~2026-10-05 if nothing broke): snapshots `pre_update_20260928` on CT 100–103; CT 104 vzdump on `local`; CT 101 `/root/miniflux-db-pre-2.3.3.sql.gz`; CT 102 `/root/freshrss-*-pre-1.30.0.*` + `/opt/freshrss-1.29.1-old`; CT 103 `/opt/rsshub-old-0788983ea` (2.4 GB) + `/root/rsshub-dist-0788983ea`; host `/root/pve-no-subscription.list.bookworm.bak`.
+
+### AdGuard (CT 100)
+- **Version**: v0.107.79. **Resources**: 6 GB disk, 2 GB RAM. At 512 MB it was OOM-killed, which made the UI/API hang and look like a login failure.
+- **Filters** update weekly. Query log and stats are kept 30 days.
+- **Private Relay blocked network-wide**: custom rules `||mask.icloud.com^$important` and `||mask-h2.icloud.com^$important`. Without them, Apple devices with "Limit IP Address Tracking" send Safari's ad/tracker lookups through Apple's relay, which bypasses AdGuard. `mask-api.icloud.com` and `apple-dns.net` stay allowed.
+- **Work laptop**: client entry keyed by both MACs (see memory) with `use_global_settings: true`, so it's filtered like every other device. Shaunak unblocks specific domains as issues come up rather than exempting the device. Don't add its IPs to `ids`.
+
+### Apps
+- **Miniflux (CT 101)**: v2.3.3 from the GitHub release `.deb` (not an apt repo). PostgreSQL DB `miniflux_db`, config `/etc/miniflux.conf`. Migrations are NOT automatic: after upgrading run `miniflux -c /etc/miniflux.conf -migrate`, then restart, or it fails with "database schema is not up to date". Health: `http://192.168.50.4:8080/healthcheck`.
+- **FreshRSS (CT 102)**: v1.30.0 tarball at `/opt/freshrss` (no git), owned `www-data`, Apache + PostgreSQL DB `freshrss`, user `shaunakt`. Upgrade: extract the release into a new dir excluding `data/`, copy the old `data/` and extensions in, `chown -R www-data`, swap dirs. Check with `php cli/health.php` as www-data. Feeds refresh every 15 min via `/etc/cron.d/freshrss-actualize`. It blocks local-network feed URLs by default.
+- **RSSHub (CT 103)**: git checkout of `DIYgod/RSSHub` at `/opt/rsshub`, `rsshub.service` (`node dist/index.mjs`, port 1200). Build with **pnpm via corepack**, not npm (npm crashes with `reading 'edgesOut'`): `COREPACK_ENABLE_DOWNLOAD_PROMPT=0 CI=true corepack pnpm install --frozen-lockfile && corepack pnpm run build`. Upgrade in a separate clone (`/opt/rsshub-next`), smoke-test with `PORT=1201 node dist/index.mjs`, then swap dirs and restart. The disk is 10 GB and two checkouts take about 5 GB.
+- **Time Machine (CT 104)**: Sabrent 1 TB SSD attached to the host as `/dev/sdb`, ext4, mounted at `/mnt/tm-disk` (fstab by UUID), owned `100000:100000` so the unprivileged CT can write, and bind-mounted into CT 104 at `/srv/timemachine` via `mp0`. Samba shares `/srv/timemachine/backup` as `[TimeMachine]` (`vfs objects = catia fruit streams_xattr`, `fruit:time machine = yes`). One Samba user, `tm`, is shared by all Macs, and each Mac gets its own sparse bundle.
+
+### Router
+- **ASUS RT-AX95Q** (ZenWiFi AX), firmware 3.0.0.4_388_24814-g4979b32 (up to date as of 2026-07-21).
+- **DHCP DNS**: DNS Server 1 = `192.168.50.3`, and **"Advertise router's IP in addition to user-specified DNS" = No**. With Yes, clients also got `192.168.50.1` as a backup DNS server, which bypasses AdGuard, so check this first if ads or blocked domains leak.
+- **Web UI**: HTTPS is off. The login page redirects to `www.asusrouter.com` whenever that name resolves to the router, which only the router's own DNS does. Chrome with "Always use secure connections" then fails with ERR_CONNECTION_REFUSED; Safari falls back to plain `http` and works.
+- **DHCP pool** is `192.168.50.20–254`. Everything below `.20` is kept for fixed IPs: the servers (.2–.7) set their addresses themselves, not via DHCP.
+- **Manual assignment** is off (`dhcp_static_x=0`). The one leftover entry, for the work laptop, was saved in the wrong field order (`<MAC>HOSTNAME>IP>`) by an old version of the recipe above; fix or delete it before turning manual assignment on.
