@@ -73,8 +73,10 @@ Verified 2026-09-29. The form must be URL-encoded like the browser sends it (`--
 ```bash
 # 1. Check the failed-login counter first (no login attempt). Only proceed if error_num is 0.
 curl -s http://192.168.50.1/Main_Login.asp | grep -o '"error_status": [0-9]*, "last_time_lock_warning": [0-9]*, "error_num": [0-9]*'
-# 2. Log in
-AUTH=$(printf '%s:%s' "$(op read 'op://Private/Asus Router/username')" "$(op read 'op://Private/Asus Router/password')" | base64)
+# 2. Log in. Abort if 1Password didn't answer (Touch ID timeout), or an empty login gets sent and counted as a failure
+U=$(op read 'op://Private/Asus Router/username') && P=$(op read 'op://Private/Asus Router/password') && [ -n "$U" ] && [ -n "$P" ] \
+  || { echo "1Password read failed - NOT contacting router"; exit 1; }
+AUTH=$(printf '%s:%s' "$U" "$P" | base64); unset U P
 TOKEN=$(curl -s -D - -o /dev/null -X POST "http://192.168.50.1/login.cgi" \
   -H "Referer: http://192.168.50.1/Main_Login.asp" \
   --data-urlencode "action_wait=5" --data-urlencode "current_page=Main_Login.asp" --data-urlencode "next_page=index.asp" \
@@ -232,4 +234,4 @@ Current state only. For when and why something changed, see `git log -p` on this
 - **DHCP DNS**: DNS Server 1 = `192.168.50.3`, and **"Advertise router's IP in addition to user-specified DNS" = No**. With Yes, clients also got `192.168.50.1` as a backup DNS server, which bypasses AdGuard, so check this first if ads or blocked domains leak.
 - **Web UI**: HTTPS is off. The login page redirects to `www.asusrouter.com` whenever that name resolves to the router, which only the router's own DNS does. Chrome with "Always use secure connections" then fails with ERR_CONNECTION_REFUSED; Safari falls back to plain `http` and works.
 - **DHCP pool** is `192.168.50.20–254`. Everything below `.20` is kept for fixed IPs: the servers (.2–.7) set their addresses themselves, not via DHCP.
-- **Manual assignment** is off (`dhcp_static_x=0`). The one leftover entry, for the work laptop, was saved in the wrong field order (`<MAC>HOSTNAME>IP>`) by an old version of the recipe above; fix or delete it before turning manual assignment on.
+- **Manual assignment** is off (`dhcp_static_x=0`) and the list is empty; the malformed work-laptop entry was deleted 2026-09-29. Nothing relies on fixed DHCP addresses, and AdGuard identifies clients by MAC.
