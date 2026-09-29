@@ -182,18 +182,15 @@
     "security-guidance@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
-    "claude-plugins-official": {
+{{- $names := keys .marketplaces | sortAlpha }}
+{{- range $i, $name := $names }}
+    {{ $name | quote }}: {
       "source": {
         "source": "github",
-        "repo": "anthropics/claude-plugins-official"
+        "repo": {{ index $.marketplaces $name | quote }}
       }
-    },
-    "caveman": {
-      "source": {
-        "source": "github",
-        "repo": "JuliusBrussee/caveman"
-      }
-    }
+    }{{ if lt (add1 $i) (len $names) }},{{ end }}
+{{- end }}
   },
   "autoUpdatesChannel": "latest",
   "verbose": true,
