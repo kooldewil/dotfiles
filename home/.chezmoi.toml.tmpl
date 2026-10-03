@@ -17,6 +17,7 @@
 {{- $work      := false -}}
 {{- $is_wsl    := false -}}
 {{- $personal  := false -}}
+{{- $is_macbook := false -}}
 
 {{/* OS detection */}}
 {{- $osID := .chezmoi.os -}}
@@ -34,6 +35,13 @@
 {{-   if (.chezmoi.kernel.osrelease | lower | contains "microsoft") -}}
 {{-     $is_wsl = true -}}
 {{-   end -}}
+{{- end -}}
+
+{{/* MacBook detection — only MacBooks have the built-in keyboard kanata
+     remaps. hw.model is "MacNN,N" on Apple silicon for every model, so use
+     the marketing Model Name instead. */}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $is_macbook = output "system_profiler" "SPHardwareDataType" | contains "Model Name: MacBook" -}}
 {{- end -}}
 
 {{/* Reliable hostname — macOS scutil is more stable than kernel hostname */}}
@@ -144,6 +152,7 @@
   email        = {{ $email | quote }}
   work         = {{ $work }}
   is_wsl       = {{ $is_wsl }}
+  is_macbook   = {{ $is_macbook }}
   dev_computer = {{ $dev_computer }}
   hostname     = {{ $hostname | quote }}
   personal     = {{ $personal }}

@@ -43,6 +43,13 @@ README.md
 Library
 {{ end }}
 
+{{ if and (eq .chezmoi.os "darwin") (not (get . "is_macbook")) }}
+# Kanata only remaps a MacBook's built-in keyboard; desktop Macs use the
+# Voyager, which does home row mods in firmware
+.config/kanata
+.config/kanata/**
+{{ end }}
+
 {{ if eq .chezmoi.os "windows" }}
 # Shell scripts don't run on Windows — skip all POSIX scripts
 .chezmoiscripts/**/*.sh

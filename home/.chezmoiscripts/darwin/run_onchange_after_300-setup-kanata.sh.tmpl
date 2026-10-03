@@ -1,3 +1,6 @@
+{{- /* Only MacBooks have the built-in keyboard kanata remaps; elsewhere (e.g. the
+     Mac Mini with a Voyager) this renders empty and chezmoi skips it. */ -}}
+{{- if get . "is_macbook" -}}
 #!/bin/bash
 # Setup Kanata with Karabiner VirtualHIDDevice driver on macOS
 # hash: {{ include "dot_config/kanata/kanata.kbd.tmpl" | sha256sum }}
@@ -274,3 +277,4 @@ echo "   1. Open System Settings → Privacy & Security"
 echo "   2. Approve the Karabiner system extension"
 echo "   3. Reboot"
 echo "   4. Run: chezmoi apply"
+{{ end -}}
