@@ -1,6 +1,7 @@
 #!/bin/bash
 # Setup Kanata with Karabiner VirtualHIDDevice driver on macOS
 # hash: {{ include "dot_config/kanata/kanata.kbd.tmpl" | sha256sum }}
+# home: {{ .chezmoi.homeDir }} (re-run if the home directory changes)
 #
 # This script:
 # 1. Installs Karabiner-DriverKit-VirtualHIDDevice (just the driver, not full Karabiner-Elements)
@@ -62,8 +63,17 @@ if ! is_service_running "com.chezmoi.kanata"; then
     NEEDS_INPUT_MONITORING=true
 fi
 
+# A loaded service can still be crash-looping on a stale plist (e.g. after a
+# home directory change), so only take the reload shortcut if the plist
+# points at the current binary and config
+plist_is_current() {
+    [[ -f "$KANATA_PLIST" ]] \
+        && grep -qF "<string>$KANATA_BIN</string>" "$KANATA_PLIST" \
+        && grep -qF "<string>$KANATA_CFG</string>" "$KANATA_PLIST"
+}
+
 # If everything is already set up and running, just reload kanata config
-if [[ "$NEEDS_DRIVER_INSTALL" == "false" ]] && is_service_running "com.chezmoi.kanata"; then
+if [[ "$NEEDS_DRIVER_INSTALL" == "false" ]] && is_service_running "com.chezmoi.kanata" && plist_is_current; then
     echo "   Config changed, reloading..."
     sudo launchctl kickstart -k system/com.chezmoi.kanata
     echo "✅ Kanata config reloaded"
