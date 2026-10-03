@@ -1,0 +1,29 @@
+{{- if ne .chezmoi.os "windows" -}}
+{{- if .dev_computer -}}
+#!/usr/bin/env bash
+# Clone the global Claude memory vault if it's missing.
+# memory-pull.sh / memory-push.sh hooks silently no-op without it, so a new
+# machine would otherwise never sync memory. Runs on every apply (not
+# run_once) so a clone that fails before SSH/1Password is set up is retried.
+
+set -uo pipefail
+
+MEMORY_DIR="$HOME/.claude/memory"
+MEMORY_REPO="git@github.com:kooldewil/claude-memory.git"
+
+[[ -d "$MEMORY_DIR/.git" ]] && exit 0
+
+if [[ -e "$MEMORY_DIR" ]]; then
+    echo "[memory] $MEMORY_DIR exists but is not a git repo; leaving it alone"
+    exit 0
+fi
+
+echo "[memory] Cloning $MEMORY_REPO..."
+if git clone --quiet "$MEMORY_REPO" "$MEMORY_DIR"; then
+    echo "[memory] Cloned to $MEMORY_DIR"
+else
+    echo "[memory] Clone failed (SSH key/1Password not ready?); will retry on next chezmoi apply"
+fi
+exit 0
+{{- end }}
+{{- end }}
