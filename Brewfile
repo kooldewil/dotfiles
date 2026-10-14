@@ -87,6 +87,7 @@ cask "homebrew/cask/onedrive"
 cask "chatgpt"
 cask "claude"
 cask "ollama"
+cask "t3-code"            # GUI for coding agents (Claude Code, Codex)
 
 # Media
 cask "vlc"
