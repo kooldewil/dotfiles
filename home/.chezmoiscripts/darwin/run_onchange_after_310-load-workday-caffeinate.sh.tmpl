@@ -2,7 +2,7 @@
      plist changes. MacBooks skip it (laptop displays should sleep normally). */ -}}
 {{- if and (eq .chezmoi.os "darwin") (not (get . "is_macbook")) -}}
 #!/bin/bash
-# hash: {{ include "Library/LaunchAgents/com.shaunakt.workday-caffeinate.plist" | sha256sum }}
+# hash: {{ include "private_Library/LaunchAgents/com.shaunakt.workday-caffeinate.plist" | sha256sum }}
 set -euo pipefail
 
 LABEL="com.shaunakt.workday-caffeinate"
