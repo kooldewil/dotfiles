@@ -1,0 +1,14 @@
+{{- /* Mac Mini only: (re)load the weekday display-awake LaunchAgent whenever its
+     plist changes. MacBooks skip it (laptop displays should sleep normally). */ -}}
+{{- if and (eq .chezmoi.os "darwin") (not (get . "is_macbook")) -}}
+#!/bin/bash
+# hash: {{ include "Library/LaunchAgents/com.shaunakt.workday-caffeinate.plist" | sha256sum }}
+set -euo pipefail
+
+LABEL="com.shaunakt.workday-caffeinate"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$PLIST"
+echo "Loaded $LABEL (displays stay awake weekdays until 17:30)"
+{{ end -}}

@@ -50,6 +50,11 @@ Library
 .config/kanata/**
 {{ end }}
 
+{{ if and (eq .chezmoi.os "darwin") (get . "is_macbook") }}
+# Weekday display-awake agent is for the Mac Mini's desk monitors only
+Library/LaunchAgents/com.shaunakt.workday-caffeinate.plist
+{{ end }}
+
 {{ if eq .chezmoi.os "windows" }}
 # Shell scripts don't run on Windows — skip all POSIX scripts
 .chezmoiscripts/**/*.sh

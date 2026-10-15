@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Mac Mini only (see .chezmoiignore): keep the displays awake on weekdays
+     until 17:30, then let them sleep normally when Shaunak is away from the desk.
+     Runs at 08:00 Mon-Fri and at login; exits immediately outside those hours. -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.shaunakt.workday-caffeinate</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/zsh</string>
+		<string>-c</string>
+		<string>[ "$(date +%u)" -le 5 ] || exit 0; now=$(date +%s); end=$(date -j -f "%H:%M:%S" "17:30:00" +%s); [ "$end" -gt "$now" ] || exit 0; exec /usr/bin/caffeinate -d -t $(( end - now ))</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StartCalendarInterval</key>
+	<array>
+		<dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>0</integer></dict>
+		<dict><key>Weekday</key><integer>2</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>0</integer></dict>
+		<dict><key>Weekday</key><integer>3</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>0</integer></dict>
+		<dict><key>Weekday</key><integer>4</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>0</integer></dict>
+		<dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>8</integer><key>Minute</key><integer>0</integer></dict>
+	</array>
+</dict>
+</plist>
