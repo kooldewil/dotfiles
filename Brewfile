@@ -57,6 +57,7 @@ cask "the-unarchiver"     # Archive extraction
 cask "appcleaner"         # App uninstaller
 cask "adguard"            # Ad blocker
 cask "tailscale-app"      # Tailnet VPN (login server: https://hs.tavind.com)
+cask "jump-desktop-connect" # Remote desktop host (lets you log in remotely after a restart)
 cask "setapp"             # App subscription service
 cask "keka"               # File archiver
 cask "macwhisper"         # Transcription tool
