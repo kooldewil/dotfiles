@@ -45,6 +45,7 @@ AdGuard is DNS for the whole network: a bad change takes every device offline, i
 | 103 | rsshub | 192.168.50.6 | RSS feed generator (port 1200) |
 | 104 | timemachine | 192.168.50.7 | Samba/Time Machine share for network backups |
 | 105 | headscale | 192.168.50.8 | Headscale (Tailscale control server), public at `https://hs.tavind.com` |
+| 107 | grimmory | 192.168.50.10 | Grimmory ebook library (Docker), `http://grimmory.home:6060` |
 | 106 | tailscale | 192.168.50.9 | Tailscale subnet router (`homeserver-router`, 100.64.0.1) for `192.168.50.0/24` |
 
 ### Known Devices
@@ -242,7 +243,7 @@ Current state only. For when and why something changed, see `git log -p` on this
 - **Miniflux (CT 101)**: v2.3.3 from the GitHub release `.deb` (not an apt repo). PostgreSQL DB `miniflux_db`, config `/etc/miniflux.conf`. Migrations are NOT automatic: after upgrading run `miniflux -c /etc/miniflux.conf -migrate`, then restart, or it fails with "database schema is not up to date". Health: `http://192.168.50.4:8080/healthcheck`.
 - **FreshRSS (CT 102)**: v1.30.0 tarball at `/opt/freshrss` (no git), owned `www-data`, Apache + PostgreSQL DB `freshrss`, user `shaunakt`. Upgrade: extract the release into a new dir excluding `data/`, copy the old `data/` and extensions in, `chown -R www-data`, swap dirs. Check with `php cli/health.php` as www-data. Feeds refresh every 15 min via `/etc/cron.d/freshrss-actualize`. It blocks local-network feed URLs by default.
 - **RSSHub (CT 103)**: git checkout of `DIYgod/RSSHub` at `/opt/rsshub`, `rsshub.service` (`node dist/index.mjs`, port 1200). Build with **pnpm via corepack**, not npm (npm crashes with `reading 'edgesOut'`): `COREPACK_ENABLE_DOWNLOAD_PROMPT=0 CI=true corepack pnpm install --frozen-lockfile && corepack pnpm run build`. Upgrade in a separate clone (`/opt/rsshub-next`), smoke-test with `PORT=1201 node dist/index.mjs`, then swap dirs and restart. The disk is 10 GB and two checkouts take about 5 GB.
-- **Time Machine (CT 104)**: Sabrent 1 TB SSD attached to the host as `/dev/sdb`, ext4, mounted at `/mnt/tm-disk` (fstab by UUID), owned `100000:100000` so the unprivileged CT can write, and bind-mounted into CT 104 at `/srv/timemachine` via `mp0`. Samba shares `/srv/timemachine/backup` as `[TimeMachine]` (`vfs objects = catia fruit streams_xattr`, `fruit:time machine = yes`). One Samba user, `tm`, is shared by all Macs, and each Mac gets its own sparse bundle.
+- **Time Machine (CT 104)**: Sabrent 1 TB SSD (RTL9210 NVMe enclosure) attached to the host as `/dev/sdb` on a **blue USB 3.2 Gen 2 port** (10 Gbps, `uas` driver, ~680 MB/s read; it was on a USB 2.0 port at 480 Mbps until 2026-10-15 — check `lsusb -t` if backups get slow), ext4, mounted at `/mnt/tm-disk` (fstab by UUID), owned `100000:100000` so the unprivileged CT can write, and bind-mounted into CT 104 at `/srv/timemachine` via `mp0`. Samba shares `/srv/timemachine/backup` as `[TimeMachine]` (`vfs objects = catia fruit streams_xattr`, `fruit:time machine = yes`). One Samba user, `tm`, is shared by all Macs, and each Mac gets its own sparse bundle.
 
 ### Router
 - **ASUS RT-AX95Q** (ZenWiFi AX), firmware 3.0.0.4_388_24814-g4979b32 (up to date as of 2026-07-21).
@@ -259,6 +260,20 @@ Current state only. For when and why something changed, see `git log -p` on this
 - Snapshot `headscale_configured` = clean config before any clients.
 - **Hairpin**: the Optus modem doesn't loop the public IP back, so at home `hs.tavind.com` must resolve locally. AdGuard has a rewrite `hs.tavind.com → 192.168.50.8` (for LAN clients); CT 106 has it in `/etc/hosts` instead, because servers use the router (`192.168.50.1`) for DNS, not AdGuard, and remote access shouldn't depend on AdGuard.
 - New devices: `headscale preauthkeys create --user 1 --expiration 1h` (single use), or interactive login from the client then `headscale nodes register`. Subnet routes need `headscale nodes approve-routes --identifier N --routes CIDR`.
+
+### Backups (Proxmox → Time Machine SSD)
+- Storage `tm-backup` = `/mnt/tm-disk/proxmox-backups` (dir, `is_mountpoint /mnt/tm-disk` so it goes offline instead of filling the root disk if the SSD is unplugged; `prune-backups keep-last=4`).
+- Job: **Sundays 03:00**, CT 100, 105, 106, 107, snapshot mode (no downtime), zstd. First run 2026-10-15 took 59 s (AdGuard 0.5 GB, Headscale 0.3 GB, subnet router 0.35 GB, Grimmory 1.1 GB incl. books + MariaDB). CT 107's `mp0` books volume is included (`backup=1`); MariaDB is crash-consistent (snapshot), which InnoDB recovers from.
+- Not in the job: CT 101–103 (RSS apps) and CT 104 (its data *is* the Time Machine disk; snapshot mode impossible with the bind mount).
+- To unplug the SSD safely: check `smbstatus` in CT 104 and disk idle, `pct stop 104`, `umount /mnt/tm-disk`; after: `mount /mnt/tm-disk`, `pct start 104`.
+- Restore: `pct restore <newid> /mnt/tm-disk/proxmox-backups/dump/vzdump-lxc-<id>-....tar.zst --storage local-lvm`.
+
+### Grimmory (CT 107)
+- Docker (29.x, from download.docker.com trixie repo) in an unprivileged CT with `nesting=1,keyctl=1`; 2 cores / 3 GB. Compose project `/opt/grimmory` (`compose.yaml`): `ghcr.io/grimmory-tools/grimmory:v3.5.0` + `lscr.io/linuxserver/mariadb:11.4.8`, both **pinned** — Grimmory releases often and was dropped from community-scripts as "unstable". Update: snapshot, bump tags, `docker compose pull && docker compose up -d`.
+- Books on a separate 100 GB volume `mp0` → `/srv/books` (`library/` = Grimmory's `/books`, `bookdrop/`, `staging/` for SSD imports). Local disk, so default `DISK_TYPE` (LOCAL) — Drew's NFS caveats don't apply. `lost+found` there is host-owned; chown only the subfolders.
+- DB passwords are generated on the server in `/opt/grimmory/grimmory.conf` (mode 600, loaded via `env_file`), deliberately not `.env` (Claude hooks block `.env`/`secret` paths) and not in 1Password. Never print it. 1Password `Grimmory` = web admin login only.
+- Bookdrop: copy batches into `/srv/books/staging/` first, then `mv` into `bookdrop/` — files streamed straight in were sometimes seen mid-write as "directories" and skipped until **Rescan**. Applied fetched metadata can be a wrong match for niche/self-published books (test: "The Habit Guide" became Glen Van Peski's book, ISBN included) — only apply fetched metadata where the fetched title matches the file's own. Genres from Goodreads are noisy (adds "Audiobook").
+- Not exposed to the internet; reached over the LAN/tailnet via AdGuard rewrite `grimmory.home → 192.168.50.10`. Snapshot `grimmory_installed` = empty, before admin setup.
 
 ### Tailscale in AdGuard (CT 100)
 - `--dev0 /dev/net/tun` (adding it needs a CT stop/start: ~13 s DNS outage on 2026-10-15). Joined with `--accept-dns=false --accept-routes=false --hostname adguard`, so AdGuard's own upstream lookups are unchanged. `hs.tavind.com` pinned in `/etc/hosts`. AdGuard binds `0.0.0.0` and `allowed_clients` is empty, so it answers on the tailnet IP with no config change. Snapshot `pre_tailscale_20261015` = before this.
