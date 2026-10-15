@@ -6,6 +6,7 @@
     "activeAction" : "autoPaste",
     "autoUpdateConfig" : true,
     "bypassModes" : "",
+    "clipboardAttachments" : false,
     "clipboardBuffer" : 5,
     "clipboardIgnore" : "",
     "clipboardStacking" : false,
@@ -35,6 +36,8 @@
     "autoPaste" : {
       "action" : ".autoPaste",
       "actionDelay" : null,
+      "clipboardAttachments" : null,
+      "clipboardStacking" : null,
       "icon" : "•",
       "inputCondition" : null,
       "moveTo" : null,
@@ -54,23 +57,55 @@
       "triggerVoice" : null
     }
   },
-   "scriptsAS" : {  },
-  "scriptsShell" : {  },
-  "shortcuts" : {  },
+  "scriptsAS" : {
+
+  },
+  "scriptsShell" : {
+
+  },
+  "shortcuts" : {
+
+  },
   "urls" : {
-      "google": {
-      "action": "https://www.google.com/search?q={{swResult||\\.$||}}",
-      "triggerVoice": "google|search",
-      "triggerLogic": "or",
-      "openWith": "Arc",
-      "openBackground": false
+    "google" : {
+      "action" : "https://www.google.com/search?q={{swResult||\\.$||}}",
+      "actionDelay" : null,
+      "clipboardAttachments" : null,
+      "clipboardStacking" : null,
+      "icon" : null,
+      "inputCondition" : null,
+      "moveTo" : null,
+      "nextAction" : null,
+      "openBackground" : false,
+      "openWith" : "Arc",
+      "restoreClipboard" : null,
+      "restoreClipboardDelay" : null,
+      "simEsc" : null,
+      "triggerApps" : null,
+      "triggerLogic" : "or",
+      "triggerModes" : null,
+      "triggerUrls" : null,
+      "triggerVoice" : "google|search"
     },
-    "kagi": {
-      "action": "https://www.kagi.com/search?q={{swResult||\\.$||}}",
-      "triggerVoice": "kagi",
-      "triggerLogic": "or",
-      "openWith": "Arc",
-      "openBackground": false
+    "kagi" : {
+      "action" : "https://www.kagi.com/search?q={{swResult||\\.$||}}",
+      "actionDelay" : null,
+      "clipboardAttachments" : null,
+      "clipboardStacking" : null,
+      "icon" : null,
+      "inputCondition" : null,
+      "moveTo" : null,
+      "nextAction" : null,
+      "openBackground" : false,
+      "openWith" : "Arc",
+      "restoreClipboard" : null,
+      "restoreClipboardDelay" : null,
+      "simEsc" : null,
+      "triggerApps" : null,
+      "triggerLogic" : "or",
+      "triggerModes" : null,
+      "triggerUrls" : null,
+      "triggerVoice" : "kagi"
     }
   }
 }
