@@ -39,19 +39,21 @@ AdGuard is DNS for the whole network: a bad change takes every device offline, i
 
 | CT | Name | IP | Purpose |
 |----|------|----|---------|
-| 100 | adguard | 192.168.50.3 | AdGuard Home DNS/ad-blocking |
+| 100 | adguard | 192.168.50.3 | AdGuard Home DNS/ad-blocking; also on the tailnet as `adguard` (100.64.0.3) |
 | 101 | miniflux | 192.168.50.4 | RSS reader |
 | 102 | freshrss | 192.168.50.5 | RSS reader |
 | 103 | rsshub | 192.168.50.6 | RSS feed generator (port 1200) |
 | 104 | timemachine | 192.168.50.7 | Samba/Time Machine share for network backups |
+| 105 | headscale | 192.168.50.8 | Headscale (Tailscale control server), public at `https://hs.tavind.com` |
+| 106 | tailscale | 192.168.50.9 | Tailscale subnet router (`homeserver-router`, 100.64.0.1) for `192.168.50.0/24` |
 
 ### Known Devices
 
 | Device | IP | MAC | Notes |
 |--------|----|-----|-------|
 | Work laptop (2 NICs) | see memory | see memory | Hostname, IPs and MACs are in `~/.claude/memory/projects.md` ("Work laptop on home network"), not here, because this file is in a public repo |
-| Shauns-M4-Mini | 192.168.50.142 | — | |
-| Shaunaks-MBP | 192.168.50.76 | — | |
+| Shauns-M4-Mini | 192.168.50.247 | — | Tailnet `macmini` 100.64.0.2; hosts T3 Code (port 3773, Network access on) |
+| Shaunaks-MBP | 192.168.50.74 | — | Tailnet `macbook-pro` 100.64.0.4 (accepts subnet routes) |
 
 ## Authentication
 
@@ -204,6 +206,17 @@ curl -s -b "asus_token=$TOKEN" -H "Referer: http://192.168.50.1/" \
 ```
 `restart_net` briefly drops the network for every client. Tell Shaunak before running it.
 
+### Router — make a saved setting take effect
+Verified 2026-10-15: `apply.cgi` saves the nvram values but its `action_script` did **not** restart anything (a new port forward stayed closed and a disabled WAN-admin port stayed open). After saving, trigger the restart explicitly and re-test the real behaviour (e.g. `nc -z 192.168.0.141 <port>`), not just the nvram value:
+```bash
+curl -s -b "asus_token=$TOKEN" -H "Referer: http://192.168.50.1/" \
+  -X POST http://192.168.50.1/applyapp.cgi \
+  --data-urlencode "action_mode=apply" --data-urlencode "rc_service=restart_firewall;restart_httpd"
+```
+
+### Router — port forwards
+`vts_enable_x=1`, `vts_rulelist` entries are `<NAME>EXTPORT>INTERNAL_IP>INTPORT>PROTO>SRCIP` (SRCIP empty = any). The list is replaced whole, so read it first. Current: `<Headscale>443>192.168.50.8>443>TCP>` (only forward).
+
 ## Known Config
 
 Current state only. For when and why something changed, see `git log -p` on this file.
@@ -215,7 +228,8 @@ Current state only. For when and why something changed, see `git log -p` on this
 - **SSH**: key `~/.ssh/id_ed25519` works on the Proxmox host (192.168.50.2) and CT 100 (192.168.50.3). Reach the other containers via `pct exec`.
 - **Local hook**: a Claude Code hook blocks `rm -rf`, so design update steps around `mv` and new dirs.
 - **Unexplained outage 2026-09-14 → 09-24**: host went down uncleanly (journal just stops). Power loss or hard hang, cause unknown.
-- **Pending cleanup** (rollback points from the 2026-09-28 updates; delete after ~2026-10-05 if nothing broke): snapshots `pre_update_20260928` on CT 100–103; CT 104 vzdump on `local`; CT 101 `/root/miniflux-db-pre-2.3.3.sql.gz`; CT 102 `/root/freshrss-*-pre-1.30.0.*` + `/opt/freshrss-1.29.1-old`; CT 103 `/opt/rsshub-old-0788983ea` (2.4 GB) + `/root/rsshub-dist-0788983ea`; host `/root/pve-no-subscription.list.bookworm.bak`.
+- **Cleanup 2026-10-15**: the 2026-09-28 rollback points are gone (snapshots on CT 100–103, CT 104 vzdump, DB dumps, host apt `.bak`); `pct fstrim 100` reclaimed 3.2 GB (thin-pool `Data%` overstates usage until trimmed — check `df` inside the CT). Old app dirs `/opt/freshrss-1.29.1-old` (CT 102), `/opt/rsshub-old-0788983ea` + `/root/rsshub-dist-0788983ea` (CT 103) were handed to Shaunak to delete (recursive deletes are hook-blocked). Today's snapshots `pre_tailscale_20261015` (CT 100), `headscale_configured` (CT 105), `subnet_router_up` (CT 106): delete after ~2026-10-29 if nothing broke.
+- **Tailnet devices**: homeserver-router 100.64.0.1, macmini .2, adguard .3, macbook-pro .4, iphone .5, ipad .6. iOS registers as `localhost`; rename with `headscale nodes rename -i ID NAME`. Interactive registration: `headscale auth register --auth-id hskey-authreq-... --user shaunak`.
 
 ### AdGuard (CT 100)
 - **Version**: v0.107.79. **Resources**: 6 GB disk, 2 GB RAM. At 512 MB it was OOM-killed, which made the UI/API hang and look like a login failure.
@@ -232,6 +246,26 @@ Current state only. For when and why something changed, see `git log -p` on this
 
 ### Router
 - **ASUS RT-AX95Q** (ZenWiFi AX), firmware 3.0.0.4_388_24814-g4979b32 (up to date as of 2026-07-21).
+- **Double NAT behind the Optus modem**: the ASUS WAN is `192.168.0.141` on the Optus Sagemcom F@ST 5366 (`192.168.0.1`, NBN FTTP), which holds the public IP (dynamic, not CGNAT). The modem stays because it carries the landline (VoIP, Line1). Modem has DMZ → `192.168.0.141` and a DHCP reservation pinning the ASUS to that address, so inbound traffic reaches the ASUS; forward ports on the ASUS only. Don't touch the modem's Voice or WAN settings. Its Wi-Fi is on but unused.
+- **DDNS**: ASUS DDNS (`*.asuscomm.com`, name in the router UI under WAN → DDNS) with `ddns_realip_x=1`, so it registers the real public IP despite the double NAT. HTTPS cert option left on Auto (Let's Encrypt there would claim port 80). Point custom names at it with a CNAME. `hs.tavind.com` is a CNAME to it (DNS for tavind.com is at Fastmail, Settings → Domains → Customize DNS; leave the mail records alone).
+- **Internet exposure**: only TCP 443 → CT 105 (Headscale). "Web Access from WAN" (`misc_http_x`) is **off** (it was on, admin on WAN port 8080, which the DMZ would have exposed). Keep it off; reach the router over the tailnet instead.
+
+### Headscale (CT 105)
+- v0.29.5 from the GitHub `.deb`, config `/etc/headscale/config.yaml` (original at `config.yaml.orig`). Listens on `0.0.0.0:443` directly, own Let's Encrypt cert via **TLS-ALPN-01** (port 443 only, no port 80). Cert cache `/var/lib/headscale/cache`. Health: `https://hs.tavind.com/health`.
+- Every TLS handshake with SNI `hs.tavind.com` while there's no valid cert triggers an ACME attempt, and Let's Encrypt allows only ~5 failed validations/hour. Test reachability with `nc -z`, not curl, until the path is confirmed.
+- From the LAN the public IP doesn't loop back through the Optus modem; test the forward via the ASUS WAN IP: `curl --resolve hs.tavind.com:443:192.168.0.141 https://hs.tavind.com/health`.
+- MagicDNS base domain `tail.tavind.com`. User `shaunak`. CLI: `pct exec 105 -- headscale ...`.
+- Client DNS (`dns.nameservers.global`) is `100.64.0.3` then `192.168.50.3`: the same AdGuard reached two ways (its own tailnet IP, and via the subnet router). Both filter, so nothing leaks; either path can fail without breaking remote DNS. AdGuard's log shows tailnet devices by their `100.64.0.x` IP (via the subnet-router path they appear as `192.168.50.9`). Config backups `config.yaml.bak-20261015-pre-adguard` (Cloudflare) and `-pre-adguard-tailnet` (LAN IP only).
+- Snapshot `headscale_configured` = clean config before any clients.
+- **Hairpin**: the Optus modem doesn't loop the public IP back, so at home `hs.tavind.com` must resolve locally. AdGuard has a rewrite `hs.tavind.com → 192.168.50.8` (for LAN clients); CT 106 has it in `/etc/hosts` instead, because servers use the router (`192.168.50.1`) for DNS, not AdGuard, and remote access shouldn't depend on AdGuard.
+- New devices: `headscale preauthkeys create --user 1 --expiration 1h` (single use), or interactive login from the client then `headscale nodes register`. Subnet routes need `headscale nodes approve-routes --identifier N --routes CIDR`.
+
+### Tailscale in AdGuard (CT 100)
+- `--dev0 /dev/net/tun` (adding it needs a CT stop/start: ~13 s DNS outage on 2026-10-15). Joined with `--accept-dns=false --accept-routes=false --hostname adguard`, so AdGuard's own upstream lookups are unchanged. `hs.tavind.com` pinned in `/etc/hosts`. AdGuard binds `0.0.0.0` and `allowed_clients` is empty, so it answers on the tailnet IP with no config change. Snapshot `pre_tailscale_20261015` = before this.
+
+### Tailscale subnet router (CT 106)
+- Tailscale from `pkgs.tailscale.com` (trixie repo), `--dev0 /dev/net/tun`, IP forwarding in `/etc/sysctl.d/99-tailscale.conf`. Joined with `--advertise-routes=192.168.50.0/24 --accept-dns=false --hostname homeserver-router`; route approved. The "UDP GRO forwarding" warning is expected (ethtool can't be changed in an unprivileged CT) and only limits peak throughput.
+- Snapshot `subnet_router_up`.
 - **DHCP DNS**: DNS Server 1 = `192.168.50.3`, and **"Advertise router's IP in addition to user-specified DNS" = No**. With Yes, clients also got `192.168.50.1` as a backup DNS server, which bypasses AdGuard, so check this first if ads or blocked domains leak.
 - **Web UI**: HTTPS is off. The login page redirects to `www.asusrouter.com` whenever that name resolves to the router, which only the router's own DNS does. Chrome with "Always use secure connections" then fails with ERR_CONNECTION_REFUSED; Safari falls back to plain `http` and works.
 - **DHCP pool** is `192.168.50.20–254`. Everything below `.20` is kept for fixed IPs: the servers (.2–.7) set their addresses themselves, not via DHCP.
