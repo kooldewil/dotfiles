@@ -56,6 +56,7 @@ cask "daisydisk"          # Disk space analyzer
 cask "the-unarchiver"     # Archive extraction
 cask "appcleaner"         # App uninstaller
 cask "adguard"            # Ad blocker
+cask "tailscale-app"      # Tailnet VPN (login server: https://hs.tavind.com)
 cask "setapp"             # App subscription service
 cask "keka"               # File archiver
 cask "macwhisper"         # Transcription tool
