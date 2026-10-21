@@ -6,19 +6,24 @@ skill_repos:
     skills:
       # productivity/
       - grill-me
+      - grilling
       - teach
-      - write-a-skill
+      - writing-for-agents
       # engineering/
-      - diagnose
+      - code-review
+      - codebase-design
+      - diagnosing-bugs
+      - domain-modeling
       - grill-with-docs
+      - implement
       - improve-codebase-architecture
       - prototype
+      - research
       - setup-matt-pocock-skills
       - tdd
-      - to-issues
-      - to-prd
+      - to-spec
+      - to-tickets
       - triage
-      - zoom-out
       # misc/
       - git-guardrails-claude-code
       - migrate-to-shoehorn
