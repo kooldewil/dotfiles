@@ -6,6 +6,7 @@ skill_repos:
     skills:
       # productivity/
       - grill-me
+      - teach
       - write-a-skill
       # engineering/
       - diagnose
