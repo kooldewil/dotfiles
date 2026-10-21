@@ -31,3 +31,6 @@ skill_repos:
   - repo: pproenca/dot-skills
     skills:
       - zod
+  - repo: microsoftdocs/agent-skills
+    skills:
+      - azure-repos
