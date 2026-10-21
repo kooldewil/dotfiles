@@ -10,6 +10,7 @@ skill_repos:
       - teach
       - writing-for-agents
       # engineering/
+      - ask-matt
       - code-review
       - codebase-design
       - diagnosing-bugs
