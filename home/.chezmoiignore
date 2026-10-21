@@ -53,6 +53,8 @@ Library
 {{ if and (eq .chezmoi.os "darwin") (get . "is_macbook") }}
 # Weekday display-awake agent is for the Mac Mini's desk monitors only
 Library/LaunchAgents/com.shaunakt.workday-caffeinate.plist
+# Lesson server for ~/Learn runs on the always-on Mac Mini only
+Library/LaunchAgents/com.shaunakt.learn-server.plist
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}

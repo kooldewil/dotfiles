@@ -1,0 +1,15 @@
+{{- /* Mac Mini only: (re)load the tailnet lesson server for ~/Learn whenever its
+     plist changes. MacBooks open lessons from the Mac Mini instead. */ -}}
+{{- if and (eq .chezmoi.os "darwin") (not (get . "is_macbook")) -}}
+#!/bin/bash
+# hash: {{ include "private_Library/LaunchAgents/com.shaunakt.learn-server.plist" | sha256sum }}
+set -euo pipefail
+
+LABEL="com.shaunakt.learn-server"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+mkdir -p "$HOME/Learn"
+launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$PLIST"
+echo "Loaded $LABEL (~/Learn served at http://100.64.0.2:8080/)"
+{{ end -}}

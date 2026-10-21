@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Mac Mini only (see .chezmoiignore): serve ~/Learn (/teach lessons) over the
+     tailnet so the iPad and MacBook can open them at http://100.64.0.2:8080/.
+     Bound to the Tailscale IP only; KeepAlive retries until Tailscale is up. -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.shaunakt.learn-server</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/python3</string>
+		<string>-m</string>
+		<string>http.server</string>
+		<string>8080</string>
+		<string>--bind</string>
+		<string>100.64.0.2</string>
+		<string>--directory</string>
+		<string>/Users/shaunakt/Learn</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ThrottleInterval</key>
+	<integer>30</integer>
+</dict>
+</plist>
