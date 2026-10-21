@@ -84,7 +84,7 @@ Note on file location: this file lives at the repo root, not in `home/` (the `.c
 | Secret management | 1Password, runtime `op` reads | 1Password + `fnox` + age-encrypted files |
 | Commit signing | SSH via 1Password | Same, plus Azure DevOps signing via `includeIf` |
 | Claude settings | `modify_` jq merge over live settings (managed wins on scalars) | `modify_` jq merge over live settings (runtime wins on scalars) |
-| Claude hooks | Vendored from external repo via `.chezmoiexternal` + a few own scripts | All self-authored Node.js, tested, in-repo; plus dcg |
+| Claude hooks | All in-repo shell/Python (vendored TheDecipherist hooks retired or owned 2026-10-21); dcg + custom `shell-guards` pack | All self-authored Node.js, tested, in-repo; plus dcg |
 | Chezmoi scripts | mise bootstrap → mise tools → 1Password → kanata → caffeinate/learn → marketplaces → skills | Same, plus brew, Dock, T3 serve, Claude install, MCP sync, skill reconcile |
 | Leaderkey / launcher | Present | Present |
 

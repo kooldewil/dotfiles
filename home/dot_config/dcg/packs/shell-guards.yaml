@@ -1,0 +1,24 @@
+schema_version: 1
+id: shaunak.shell_guards
+name: Shell guards
+version: 1.0.0
+description: Checks carried over from the retired block-dangerous-commands.sh hook that dcg's built-in packs don't cover.
+keywords: [chmod, ".env", cat, less, more, head, tail, bat, strings, xxd, curl, wget, nc, ncat, netcat, scp, rsync]
+denial_banner: Blocked by shell guards
+destructive_patterns:
+  - name: chmod-world-writable
+    pattern: '\bchmod\b(?:\s+-[A-Za-z]+)*\s+(?:0?777|a\+rwx|ugo\+rwx)(?=\s|$)'
+    severity: high
+    description: Makes files world-writable.
+    explanation: Use 755 for directories and 644 for files; nothing on this machine needs 777.
+  - name: env-file-read
+    # A real .env or .env.<name> path (not .env.example, not words like .environment).
+    pattern: '\b(?:cat|less|more|head|tail|bat|strings|xxd)\b[^|;&]*?(?:^|[\s/''"=])\.env(?:\.(?!example\b)[\w-]+)?(?=$|[\s''";|&)])'
+    severity: high
+    description: Reads a .env file through the shell.
+    explanation: Claude's Read tool is already denied .env files; reading them with cat and friends would bypass that. Use .env.example for variable names, or ask the user.
+  - name: secret-file-upload
+    pattern: '\b(?:curl|wget|nc|ncat|netcat|scp|rsync)\b[^|;&]*?\S*\.(?:env|pem|key)(?:\.[\w-]+)?(?=$|[\s''";|&)])'
+    severity: high
+    description: Sends a .env, .pem or .key file over the network.
+    explanation: These files usually hold secrets. Copy them by hand if this is really intended.

@@ -39,10 +39,15 @@ retired_allow='[
   "Bash(chezmoi :*)", "Bash(mise :*)", "Bash(npx :*)"
 ]'
 
+# Hook scripts dropped from the managed settings: any hook whose command contains one
+# of these is stripped, and entries or events left empty are removed.
+# 2026-10-21: vendored hooks replaced by dcg and git-commit-check.sh.
+retired_hooks='["hooks/block-dangerous-commands.sh", "hooks/end-of-turn.sh", "hooks/block-secrets.py"]'
+
 case "$existing" in *[![:space:]]*) ;; *) existing='{}' ;; esac
 
 # $(...) drops jq's trailing newline, matching how Claude Code writes the file
-merged=$(printf '%s' "$existing" | jq --argjson m "$managed" --argjson retired "$retired_allow" '
+merged=$(printf '%s' "$existing" | jq --argjson m "$managed" --argjson retired "$retired_allow" --argjson retired_hooks "$retired_hooks" '
   # a = managed, b = live
   def dm(a; b):
     if (a|type) == "object" and (b|type) == "object" then
@@ -64,5 +69,9 @@ merged=$(printf '%s' "$existing" | jq --argjson m "$managed" --argjson retired "
   | dm($m; $live)
   | .enabledPlugins = (($m.enabledPlugins // {}) + ($live.enabledPlugins // {}))
   | .permissions.allow -= $retired
+  | .hooks = ((.hooks // {}) | with_entries(.value |= (
+      map(.hooks |= map(select((.command // "") as $c | $retired_hooks | any(. as $r | $c | contains($r)) | not)))
+      | map(select((.hooks | length) > 0))))
+      | with_entries(select((.value | length) > 0)))
 ')
 printf '%s' "$merged"

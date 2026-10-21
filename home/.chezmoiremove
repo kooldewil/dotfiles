@@ -1,0 +1,5 @@
+# Targets chezmoi deletes on apply (paths relative to ~).
+# 2026-10-21: vendored Claude hooks replaced by dcg and git-commit-check.sh.
+.claude/hooks/block-dangerous-commands.sh
+.claude/hooks/end-of-turn.sh
+.claude/hooks/block-secrets.py
