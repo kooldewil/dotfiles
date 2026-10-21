@@ -1,0 +1,7 @@
+# Global commit-check policy, passed via --config by ~/.claude/hooks/git-commit-check.sh
+# when a repo has no cchk.toml of its own. Checks Claude's commits only.
+[commit]
+conventional_commits = true
+allow_commit_types = ["feat", "fix", "docs", "style", "refactor", "test", "chore", "perf", "build", "ci", "revert"]
+# No Co-Authored-By / "Generated with Claude Code" lines in commit messages.
+ai_attribution = "forbid"

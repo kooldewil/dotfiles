@@ -104,6 +104,10 @@
           {
             "type": "command",
             "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/block-dangerous-commands.sh'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/git-commit-check.sh pre'"
           }
         ]
       }
@@ -137,6 +141,15 @@
             "command": "bash -c 'test -d .jj && jj diff --stat 2>/dev/null || true'"
           }
 {{- end }}
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/hooks/git-commit-check.sh post'"
+          }
         ]
       }
     ],
@@ -197,7 +210,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bun x -y ccstatusline@latest",
+    "command": "command -v ccstatusline >/dev/null 2>&1 && exec ccstatusline || exec bun x -y ccstatusline@latest",
     "padding": 0
   },
   "enabledPlugins": {

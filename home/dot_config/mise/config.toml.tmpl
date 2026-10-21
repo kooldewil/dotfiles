@@ -50,6 +50,13 @@ chezmoi = "latest"
 "github:Dicklesworthstone/destructive_command_guard" = "latest"
 {{- end }}
 
+# Claude Code status line. Installed here so each repaint runs a local binary
+# instead of resolving the package through `bun x` on every run.
+"npm:ccstatusline" = "latest"
+# commit-check: Conventional Commits policy engine, run on Claude's commits by
+# ~/.claude/hooks/git-commit-precheck.sh (config: ~/.config/commit-check/cchk.toml).
+"pipx:commit-check" = "latest"
+
 # Cross-platform shell tools
 "aqua:junegunn/fzf" = "latest"
 "aqua:ajeetdsouza/zoxide" = "latest"
