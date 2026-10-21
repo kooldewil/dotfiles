@@ -28,10 +28,21 @@ managed=$(cat <<'CHEZMOI_SETTINGS_EOF'
 CHEZMOI_SETTINGS_EOF
 )
 
+# Allow rules dropped from the managed settings. Arrays union, so a rule removed from
+# the template stays in the live file unless it's stripped here.
+# 2026-10-21: blanket exec-capable wildcards narrowed to read-only subcommands.
+retired_allow='[
+  "Bash(brew :*)", "Bash(pnpm run :*)", "Bash(cargo :*)", "Bash(go :*)",
+  "Bash(git :*)", "Bash(git worktree :*)", "Bash(gh :*)", "Bash(jj :*)",
+  "Bash(docker :*)", "Bash(kubectl :*)", "Bash(terraform :*)",
+  "Bash(rg :*)", "Bash(ripgrep :*)", "Bash(fd :*)", "Bash(fzf :*)",
+  "Bash(chezmoi :*)", "Bash(mise :*)", "Bash(npx :*)"
+]'
+
 case "$existing" in *[![:space:]]*) ;; *) existing='{}' ;; esac
 
 # $(...) drops jq's trailing newline, matching how Claude Code writes the file
-merged=$(printf '%s' "$existing" | jq --argjson m "$managed" '
+merged=$(printf '%s' "$existing" | jq --argjson m "$managed" --argjson retired "$retired_allow" '
   # a = managed, b = live
   def dm(a; b):
     if (a|type) == "object" and (b|type) == "object" then
@@ -52,5 +63,6 @@ merged=$(printf '%s' "$existing" | jq --argjson m "$managed" '
   . as $live
   | dm($m; $live)
   | .enabledPlugins = (($m.enabledPlugins // {}) + ($live.enabledPlugins // {}))
+  | .permissions.allow -= $retired
 ')
 printf '%s' "$merged"
