@@ -1,8 +1,10 @@
 # Dotfiles Comparison: yours vs. Drewtopia/dotfiles
 
-*Generated: 2026-07-24 | Source: Drewtopia/dotfiles (main branch, commit `20f62f3`) | Supersedes the 2026-05-23 version of this file — Drew's repo has changed substantially since then (worktrunk, cvault, self-authored Node.js hooks, Azure DevOps git integration, WSL support, and commit-check policy enforcement are all new additions).*
+*Generated: 2026-10-21 | Source: Drewtopia/dotfiles (main, commit `dbc91ed`, local clone pulled the same day) | Supersedes the 2026-07-24 version. Drew made 123 commits since 2026-09-28; the big themes are dcg, worktrunk + Orca worktree flow, ~/.claude/mods, age-encrypted work files, T3 Code server, and moving every install through mise.*
 
-Note on file location: Drew's `.chezmoiroot` points at `home/`, same as yours, but this file is written to the **repo root** (`~/.local/share/chezmoi/COMPARISON-Drewtopia.md`) rather than inside `home/` — putting it inside `home/` would make chezmoi treat it as a dotfile to apply to `~/COMPARISON-Drewtopia.md`.
+Note on file location: this file lives at the repo root, not in `home/` (the `.chezmoiroot`), so chezmoi never applies it to `~`.
+
+**Already adopted from Drew:** dcg (2026-10-21, with `platform.github`, `platform.azure_devops` and his `azure-writes` pack); the `10-install-mise-tools` script (2026-10-21); the `modify_settings.json` merge (2026-10-21, managed wins on scalars except `enabledPlugins`, unlike Drew's runtime-wins).
 
 ---
 
@@ -11,44 +13,42 @@ Note on file location: Drew's `.chezmoiroot` points at `home/`, same as yours, b
 ### Claude Code / AI tooling
 | Item | Description | Location |
 |---|---|---|
-| Self-authored Node.js hook suite (with unit tests) | `block-secrets.js`, `notify.js`, `post-edit-format.js`, `pre-bash-dispatcher.js`, `session-start-git-status.js`, `warn-derived-artifact.js`, `warn-edit-on-protected.js`, `warn-worktree-convention.js` | `dot_claude/hooks/` |
-| `stop-end-of-turn.js` quality gate | Runs lint/typecheck/secret-scan on every Stop event before Claude can end a turn | `dot_claude/hooks/stop-end-of-turn.js` |
-| `modify_settings.json.tmpl` | `jq` deep-merge of a managed settings floor into the *live* settings.json, so Claude's own runtime writes survive `chezmoi apply` | `dot_claude/modify_settings.json.tmpl` |
-| `cvault` CLI + `claude-vault` external repo | Memory/rules symlinked from a separate git repo, managed by a full custom CLI (status/diff/apply/update/sync/merge) | `dot_local/bin/executable_cvault`, `dot_claude/symlink_memory.tmpl` |
-| `git-commit-precheck.sh` + `commit-check`/`cchk.toml` | Lefthook/gitleaks-style pre-commit fallback specifically countering Claude bypassing hooks via `-c core.hooksPath=/dev/null`; enforces Conventional Branch naming | `dot_claude/executable_git-commit-precheck.sh`, `dot_config/commit-check/cchk.toml` |
-| Profile-gated plugin enablement | `always`/`personal`/`dev_computer` tables with inline rationale for retired plugins | `.chezmoidata/claude.toml` |
-| 11 plugin marketplaces (vs. your 6) | Includes `i-have-adhd`, `mattpocock`, `superpowers-extended`, `worktrunk` | `.chezmoidata/claude.toml` |
-| `worktrunk` | Worktree manager; places worktrees under `.claude/worktrees/<branch>`, LLM-generated commit/squash messages via hermetic `claude -p --model=haiku --safe-mode` | `dot_config/worktrunk/config.toml` |
-| `ha-mcp` (Home Assistant) + `mcp-obsidian` MCP servers | You only have `sequential-thinking` | `dot_claude/mcp.json.tmpl` |
-| GitHub Copilot instructions | Parallel/lighter version of CLAUDE.md ported for Copilot | `dot_github/copilot-instructions.md.tmpl` |
-| `close`, `reorganize-memory`, `audit-skill-repos`, `audit-rules-and-skills` skills | Elaborate session-closeout (Open Brain capture, memory writes, commit splitting, SESSION_LOG.md) and memory/rules hygiene tooling | `dot_claude/skills/` |
+| `modify_settings.json` + `claude-settings-merge` | jq merge of a managed floor into the *live* settings.json, so runtime writes (dcg's hook, `/auto-mode-setup`'s `autoMode` block, plugin toggles) survive `chezmoi apply`. Also retires old hooks explicitly | `dot_claude/modify_settings.json.tmpl`, `.chezmoitemplates/claude-settings-merge` |
+| Self-authored Node.js hook suite with tests | `pre-bash-dispatcher.js`, `block-secrets.js`, `post-edit-format.js`, `notify.js`, `cwd-changed-worktree-check.js`, `edit-governance-guard.cjs`, `post-commit-clear-nudge.js`; `tests/` dir | `dot_claude/hooks/` |
+| `git-commit-precheck.sh` + `commit-check` | Push/commit gate enforcing Conventional Commits + Conventional Branch, and countering `-c core.hooksPath=/dev/null` bypass. `commit-check` installed via `pipx:` in mise | `dot_claude/hooks/`, `dot_config/commit-check/` |
+| `~/.claude/mods` | Each folder under `~/.claude/mods` loads as a Claude Code plugin from zsh; guarded by hooks | `dot_config/zsh/`, `dot_claude/hooks/` |
+| ccstatusline (installed + configured) | Status line config tracked in repo; installed as a mise `npm:` tool so repaints don't go through `bun x` | `dot_config/ccstatusline/settings.json`, mise config |
+| Custom skills | `catch-up` (re-entry briefing per worktree), `find-session` (fuzzy search past sessions), `flow-check` (find undecided/unhomed threads), `close`, `reconcile-tracker`, `edit-governance`, `homelab-ops`, `audit-*`, `reorganize-memory` | `dot_claude/skills/` |
+| Extra skill repos | `chief-of-staff`, `claude-handoff`, `loop-me` (mattpocock), `conventional-branch`, `playwright-cli`, `humanizer`, `azure-repos` (microsoftdocs), `orca-cli`, `shadcn/improve`, `anti-slop` | `.chezmoidata/skills.yaml` |
+| 13 plugin marketplaces | Adds `i-have-adhd`, `obsidian-skills`, `qmd`, `superpowers-extended`, `ecc`, `worktrunk`, `humanizer`, `superwhisper`, `pstack-claude`; profile-gated `[plugins.always/personal/dev_computer]` with `false` as a rejection record | `.chezmoidata/claude.toml` |
+| CLI-ified agent tools | `@playwright/cli`, `ctx7` (library docs) instead of per-session MCP servers; also `defuddle`, `qmd` (local markdown search), `@openai/codex` | `dot_config/mise/config.toml.tmpl` |
+| Claude session tools | `claude-ls`, `claude-tail`, `claude-log-session` | `dot_local/bin/` |
 
 ### Dev tooling / VCS
 | Item | Description | Location |
 |---|---|---|
-| Azure DevOps git integration | `useHttpPath`, WSL→Windows `ssh.exe` routing, custom `.git-azdo-helper.sh`, conditional SSH commit signing via `includeIf` | `dot_config/git/config.tmpl`, `executable_dot_git-azdo-helper.sh` |
-| Repo self-governance | `.changeset/` + `CHANGELOG.md` for versioning the dotfiles repo itself, `tests/` with Pester unit tests for Windows-relocation logic, `CONTEXT.md` domain vocabulary, `AGENTS.md` + `docs/agents/` (issue-tracker, triage-labels, domain docs) | repo root, `docs/` |
-| `fnox` secrets-manager shell activation | Secrets rendered at chezmoi apply-time into a private shell file (vs. your runtime 1Password pull) | `dot_config/shell/020-shell-tools.sh.tmpl`, `private_015-vault.sh.tmpl` |
+| worktrunk (`wt`) + Orca | Worktree manager: `wt new`/`resume`, `wt step land`, `ship` alias builds PR body from commits, `wt-attic` saves untracked files before removal; worktrees open as Orca tabs | `dot_config/worktrunk/`, `dot_local/bin/executable_wt-*` |
+| age-encrypted work files | Work-only config (worktrunk work config, Azure Repos git include) committed encrypted | `encrypted_*.age` files |
+| Azure DevOps git integration | `useHttpPath`, conditional SSH signing via `includeIf`, `.git-azdo-helper.sh` | `dot_config/git/` |
+| XDG git config | `~/.config/git/config` + `ignore` + `allowed_signers` | `dot_config/git/` |
+| Repo self-governance | `.changeset/` + `CHANGELOG.md`, Pester tests, `GLOSSARY.md`, `AGENTS.md`, `docs/agents/` | repo root |
 
 ### Terminal & shell
 | Item | Description | Location |
 |---|---|---|
-| WezTerm config | Secondary terminal, default on work Windows machines (routes into WSL2 Ubuntu domain) | `dot_wezterm.lua.tmpl` |
-| Full WSL support | `.wslconfig` tuning (no GPU, no DNS proxy, no localhost forwarding), `.bashrc`/`.profile` for WSL shells | `dot_wslconfig.tmpl`, `dot_bashrc.tmpl`, `dot_profile.tmpl` |
-| `btop`, `navi` configs | You have neither | `dot_config/btop/`, `dot_config/navi/` |
+| herdr | Agent-aware terminal multiplexer; persists panes and resumes Claude sessions after reboot | `dot_config/herdr/`, mise config |
+| yazi, navi, btop | File manager, cheatsheet launcher, system monitor | mise config, `dot_config/` |
+| WezTerm + WSL | WezTerm for work Windows; `.wslconfig`, `.bashrc`, `.profile` | `dot_wezterm.lua.tmpl`, `dot_wslconfig.tmpl` |
+| `fnox` vault shell file | Secrets rendered at apply time into a private shell module | `dot_config/shell/private_015-vault.sh.tmpl` |
 
-### Automation (chezmoi scripts) / Windows
+### Automation (chezmoi scripts)
 | Item | Description | Location |
 |---|---|---|
-| Corporate-Windows "relocation" model | Detects locked-down endpoint-security path restrictions and relocates tool installs to a whitelisted folder; combines Scoop + Winget | `.chezmoi.toml.tmpl`, `.chezmoitemplates/windows-relocation` |
-| `executable_op.tmpl` | 1Password CLI shim through Windows interop for native Linux/WSL `op` | `dot_local/bin/executable_op.tmpl` |
-| Dock cleanup, VS Code extension relocation, font registration, PowerShell module install | Additional bootstrap scripts you don't have | `.chezmoiscripts/darwin/`, `.chezmoiscripts/windows/` |
-
-### Apps (GUI)
-| Item | Description | Location |
-|---|---|---|
-| Full Brewfile with ~35 casks | Arc, Hammerspoon, Hazel, Home Assistant, Plex, Raindrop.io, Tailscale, VS Code, WezTerm, Zen, etc. — with inline comments on deliberately excluded casks | `.chezmoiscripts/darwin/run_onchange_before_10-install-brew-packages.sh.tmpl` |
-| VS Code `mcp.json.tmpl` | Windows work-machine specific | `Library/Application Support/Code/` |
+| T3 Code server as a LaunchAgent | `t3 serve` bound to the Mac's Tailscale IP on 3773, separate state dir, launchd restarts it | `dot_local/bin/executable_t3-serve-tailnet`, `darwin/run_onchange_after_70-load-t3-serve.sh.tmpl` |
+| Dock configuration | `dockutil` removes stock apps on apply | `darwin/run_onchange_after_60-configure-dock.sh` |
+| Brew packages on apply | `run_onchange` brew script, so new casks install on `chezmoi apply` | `darwin/run_onchange_before_10-install-brew-packages.sh.tmpl` |
+| Claude Code install, MCP server sync, plugin-permission fix, skill reconcile, memory backup, topgrade reminder | More of the Claude setup is scripted | `.chezmoiscripts/common/` |
+| Corporate-Windows relocation, winget, PowerShell modules | Work Windows support | `.chezmoitemplates/windows-relocation`, `.chezmoiscripts/windows/` |
 
 ---
 
@@ -57,13 +57,18 @@ Note on file location: Drew's `.chezmoiroot` points at `home/`, same as yours, b
 ### Claude Code / AI tooling
 | Item | Description | Location |
 |---|---|---|
-| `dotfiles-compare`, `fix-ebooks`, `handoff`, `jumpdesktop-teams-diagnose` skills | No overlap with Drew's custom skill set at all | `dot_claude/skills/` |
+| `dotfiles-compare`, `fix-ebooks`, `handoff`, `homeserver`, `jumpdesktop-teams-diagnose` skills | No overlap with Drew's custom skills | `dot_claude/skills/` |
+| jj hooks for Claude | `jj-block-trunk`, `jj-describe-claude` | `dot_claude/hooks/` |
+| Memory sync hooks | `memory-pull.sh` / `memory-push.sh` to `kooldewil/claude-memory` | `dot_claude/hooks/` |
+| mattpocock engineering skills | `tdd`, `to-prd`, `to-issues`, `triage`, `prototype`, `zoom-out`, `teach` | `.chezmoidata/skills.yaml` |
 
-### Dev tooling
+### Automation / macOS
 | Item | Description | Location |
 |---|---|---|
-| `yt-dlp`, `croc` (personal-only mise tools) | Not in Drew's tool list | `dot_config/mise/config.toml.tmpl` |
-| Bootstrap-time Brewfile | chezmoi scripts install only `mise` and the 1Password CLI; CLI tools come from mise. GUI apps come from a repo-root `Brewfile` (55 casks, 31 Mac App Store apps) that `install.sh` runs with `brew bundle` on first setup. Unlike Drew's `run_onchange` script, new Brewfile entries aren't installed by `chezmoi apply` | `Brewfile`, `install.sh`, `.chezmoiscripts/darwin/` |
+| Learn lesson server | `~/Learn` served on the tailnet from the Mac mini | `private_Library/LaunchAgents/com.shaunakt.learn-server.plist` |
+| Weekday display caffeinate | Keeps Mac mini displays awake until 17:30 | `com.shaunakt.workday-caffeinate.plist` |
+| Personal mise tools | `yt-dlp`, `croc` | mise config |
+| Bootstrap Brewfile | 58 casks + MAS apps, run once by `install.sh` | `Brewfile`, `install.sh` |
 
 ---
 
@@ -71,33 +76,33 @@ Note on file location: Drew's `.chezmoiroot` points at `home/`, same as yours, b
 
 | Area | You | Drew |
 |---|---|---|
-| Shell framework | oh-my-zsh + Powerlevel10k + Zinit | Same, plus `fnox` secrets activation |
-| Terminal | Ghostty only | Ghostty (macOS) + WezTerm (Windows/WSL) |
-| Primary VCS workflow | jj w/ custom revsets + Claude hooks (`jj-block-trunk`, `jj-describe-claude`) | jj w/ similar revset/alias design, plus Azure DevOps git config for work |
-| Git config location | `dot_gitconfig.tmpl` (repo root) | `dot_config/git/config.tmpl` (XDG path) + `config.local` include |
-| Cross-platform | macOS + Windows (Scoop) | macOS + Windows (Scoop+Winget) + WSL2 + "relocated" corporate Windows |
-| Secret management | 1Password, tokens pulled at shell **runtime** | 1Password + `fnox`, secrets rendered at chezmoi **apply-time** |
-| Commit signing | SSH via 1Password (personal machines) | Same, plus conditional Azure DevOps signing path via `includeIf` |
-| Chezmoi scripts | mise bootstrap → 1Password CLI → kanata/Karabiner → Claude marketplace sync → skills install | Same categories, plus Dock cleanup, VS Code extension relocation, font registration, PowerShell modules |
-| Claude Code hooks | Shell/Python, sourced from an external repo via `.chezmoiexternal.toml` | Self-authored Node.js, with unit tests, in-repo |
-| Claude memory sync | Two hook scripts syncing `~/.claude/memory` to a GitHub repo | Symlinked external `claude-vault` repo + dedicated `cvault` CLI |
-| Leaderkey / launcher | Present, same action-tree structure (browsers/open/raycast/screenshot/window mgmt via Rectangle Pro) | Present, same structure, different app bindings (adds Jump Desktop shortcut for work) |
+| Shell framework | oh-my-zsh + Powerlevel10k + Zinit | Same, plus ZDOTDIR layout and `fnox` |
+| Terminal / multiplexer | Ghostty + tmux | Ghostty + WezTerm (Windows) + herdr / tmux / psmux |
+| Primary VCS workflow | jj + Claude jj hooks | jj + worktrunk/Orca worktree-per-branch flow |
+| Git config location | `dot_gitconfig.tmpl` | `dot_config/git/config.tmpl` (XDG) + encrypted includes |
+| Cross-platform | macOS + Windows (Scoop) | macOS + Windows (Scoop/winget via mise) + WSL2 + Linux |
+| Secret management | 1Password, runtime `op` reads | 1Password + `fnox` + age-encrypted files |
+| Commit signing | SSH via 1Password | Same, plus Azure DevOps signing via `includeIf` |
+| Claude settings | `modify_` jq merge over live settings (managed wins on scalars) | `modify_` jq merge over live settings (runtime wins on scalars) |
+| Claude hooks | Vendored from external repo via `.chezmoiexternal` + a few own scripts | All self-authored Node.js, tested, in-repo; plus dcg |
+| Chezmoi scripts | mise bootstrap → mise tools → 1Password → kanata → caffeinate/learn → marketplaces → skills | Same, plus brew, Dock, T3 serve, Claude install, MCP sync, skill reconcile |
+| Leaderkey / launcher | Present | Present |
 
 ---
 
 ## Section 4: Suggested adoptions (ranked)
 
-**1. `stop-end-of-turn.js`-style quality gate**
-A Stop hook running lint/typecheck/secret-scan before Claude can end a turn. Strengthens your existing `end-of-turn.sh`/`after-edit.sh` hooks by catching broken code before you see it.
+**1. `modify_settings.json` merge**
+Today's DCG install showed the cost of a plain template: `chezmoi apply` would have stripped dcg's hook, and it will still strip the `autoMode` block `/auto-mode-setup` wrote — a merge lets runtime writers and chezmoi coexist.
 
-**2. Pre-commit hook-bypass countermeasure**
-Your `settings.json.tmpl` denies `git push` outright, but nothing stops Claude from disabling your *other* local git hooks via `-c core.hooksPath=/dev/null`. Drew's `git-commit-precheck.sh` fallback closes that gap.
+**2. T3 Code server as a LaunchAgent**
+You already host T3 Code on the Mac mini for other devices; Drew's script binds `t3 serve` to the tailnet IP under launchd, so it survives restarts without the desktop app being open or logged in.
 
-**3. `modify_settings.json.tmpl` deep-merge pattern**
-Claude Code writes to `settings.json` at runtime (plugin toggles, telemetry state); a plain chezmoi template will stomp those writes on the next `apply`. The `jq`-merge approach lets both sides coexist.
+**3. Push/commit precheck with `commit-check`**
+Enforces your Conventional Commits style and blocks hook bypass, which matters now that Claude does more of your commits.
 
-**4. Own your Claude Code hooks instead of vendoring them externally**
-You currently pull `block-secrets.py`, `notify.sh`, etc. from `TheDecipherist/claude-code-mastery` via `.chezmoiexternal.toml`. Drew's in-repo, tested, self-authored equivalents remove that supply-chain dependency and give you full control over behavior.
+**4. ccstatusline config + CLI-ified agent tools (`playwright-cli`, `ctx7`)**
+Cheap wins: a tracked status line, and browser/docs tools as CLIs rather than per-session MCP servers.
 
-**5. `worktrunk`**
-Given you already run a jj + git-worktree workflow (your `jj-block-trunk`/`jj-describe-claude` hooks), worktrunk's LLM-generated commit/squash messages and standardized worktree location (`.claude/worktrees/<branch>`) is a low-risk addition that fits what you've already built.
+**5. herdr**
+Since the Mac mini runs long agent sessions, a multiplexer that resumes Claude sessions after a reboot fits your setup — try it before adopting worktrunk/Orca, which is tuned to Drew's Azure work flow.
