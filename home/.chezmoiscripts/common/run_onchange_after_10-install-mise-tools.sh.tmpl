@@ -1,0 +1,17 @@
+{{- if ne .chezmoi.os "windows" -}}
+#!/usr/bin/env bash
+# Install the runtimes and tools declared in ~/.config/mise/config.toml so
+# downstream scripts (55-update-claude-marketplaces, 60-install-skills) find
+# node/npx on a fresh machine. Re-runs whenever the mise config changes:
+# hash: {{ include "dot_config/mise/config.toml.tmpl" | sha256sum }}
+
+set -euo pipefail
+
+if ! command -v mise >/dev/null 2>&1; then
+    echo "[mise] mise not on PATH; skipping tool install" >&2
+    exit 0
+fi
+
+echo "[mise] Installing tools from ~/.config/mise/config.toml..."
+mise install --yes
+{{- end }}

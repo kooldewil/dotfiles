@@ -13,6 +13,9 @@
 
 set -euo pipefail
 
+# chezmoi may run outside an activated shell; fall back to mise's shims for npx
+export PATH="$PATH:$HOME/.local/share/mise/shims"
+
 if ! command -v npx >/dev/null 2>&1; then
     echo "[skills] npx not on PATH; skipping"
     exit 0
