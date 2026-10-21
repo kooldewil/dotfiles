@@ -55,6 +55,9 @@ Library
 Library/LaunchAgents/com.shaunakt.workday-caffeinate.plist
 # Lesson server for ~/Learn runs on the always-on Mac Mini only
 Library/LaunchAgents/com.shaunakt.learn-server.plist
+# T3 Code tailnet server runs on the Mac Mini only; MacBooks pair with it
+Library/LaunchAgents/com.shaunakt.t3-serve.plist
+.local/bin/t3-serve-tailnet
 {{ end }}
 
 {{ if eq .chezmoi.os "windows" }}

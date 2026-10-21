@@ -1,0 +1,15 @@
+{{- /* Mac Mini only: (re)load the always-on T3 Code tailnet server whenever its plist
+     or wrapper changes. MacBooks pair with the Mac Mini's server instead. */ -}}
+{{- if and (eq .chezmoi.os "darwin") (not (get . "is_macbook")) -}}
+#!/bin/bash
+# hash: {{ printf "%s%s" (include "private_Library/LaunchAgents/com.shaunakt.t3-serve.plist") (include "dot_local/bin/executable_t3-serve-tailnet") | sha256sum }}
+set -euo pipefail
+
+LABEL="com.shaunakt.t3-serve"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+mkdir -p "$HOME/.t3-server"
+launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$PLIST"
+echo "Loaded $LABEL (T3 Code server on the tailnet, port 3773; log: ~/Library/Logs/t3-serve.log)"
+{{ end -}}

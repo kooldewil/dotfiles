@@ -1,0 +1,15 @@
+#!/bin/zsh -l
+# Run the T3 Code server on the Mac Mini's tailnet address, for the MacBook, iPad and phone.
+# Started by ~/Library/LaunchAgents/com.shaunakt.t3-serve.plist; launchd restarts it if it exits.
+# State lives in ~/.t3-server, apart from the desktop app's own backend on ~/.t3, so turn off
+# the app's Network access (it would otherwise hold port 3773 on every interface).
+# Login shell (-l) so provider CLIs (claude, codex) are on PATH. Pattern from Drewtopia/dotfiles.
+
+until ip=$(/usr/local/bin/tailscale ip -4 2>/dev/null) && [[ -n $ip ]]; do
+  sleep 5
+done
+
+cd ~ || exit 1
+# ~/.t3/bin/t3 is written by the desktop app and runs its bundled server; it needs the app
+# installed, not running. If the app moves (e.g. Alpha -> Beta), open it once to refresh it.
+exec ~/.t3/bin/t3 serve --host "$ip" --port 3773 --base-dir ~/.t3-server --no-browser
