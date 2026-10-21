@@ -4,7 +4,7 @@
 
 Note on file location: this file lives at the repo root, not in `home/` (the `.chezmoiroot`), so chezmoi never applies it to `~`.
 
-**Already adopted from Drew:** dcg (2026-10-21, with `platform.github`, `platform.azure_devops` and his `azure-writes` pack); the `10-install-mise-tools` script (2026-10-21); the `modify_settings.json` merge (2026-10-21, managed wins on scalars except `enabledPlugins`, unlike Drew's runtime-wins).
+**Already adopted from Drew:** dcg (2026-10-21, with `platform.github`, `platform.azure_devops` and his `azure-writes` pack); the `10-install-mise-tools` script (2026-10-21); the `modify_settings.json` merge (2026-10-21, managed wins on scalars except `enabledPlugins`, unlike Drew's runtime-wins); skills `find-session`, `flow-check`, `audit-skill-repos` (adapted) and `azure-repos`; the T3 Code tailnet server LaunchAgent; ccstatusline via mise with tracked config; Drew's commit precheck (gitleaks on staged files) extended with `commit-check` on the message after each Claude commit. Not adopted: his branch-name push gate (you commit to `main` and Claude can't push).
 
 ---
 
