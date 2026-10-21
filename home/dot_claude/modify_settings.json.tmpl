@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+{{/*
+  chezmoi modify_ script for ~/.claude/settings.json (pattern from Drewtopia/dotfiles).
+
+  Claude Code and tools write to this file at runtime: dcg registers its own hook,
+  /auto-mode-setup adds an autoMode block, /plugin toggles plugins. A plain template
+  would wipe those on every apply, so the managed settings in
+  .chezmoitemplates/claude-settings.json are merged over the live file instead:
+    - managed wins on scalar conflicts, except enabledPlugins (runtime toggles win);
+    - objects keep the live file's key order, so there's no formatting churn;
+    - arrays union (managed entries enforced, runtime additions kept);
+    - hook entries: live kept verbatim, a managed hook added only if its command
+      is absent. Removing a hook from the template does NOT remove it from the
+      live file: add a retire filter at the end of the jq program for that.
+*/}}
+set -euo pipefail
+
+existing=$(cat)
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "[claude-settings] jq not on PATH; leaving ~/.claude/settings.json unchanged" >&2
+    printf '%s' "$existing"
+    exit 0
+fi
+
+managed=$(cat <<'CHEZMOI_SETTINGS_EOF'
+{{ template "claude-settings.json" . }}
+CHEZMOI_SETTINGS_EOF
+)
+
+case "$existing" in *[![:space:]]*) ;; *) existing='{}' ;; esac
+
+# $(...) drops jq's trailing newline, matching how Claude Code writes the file
+merged=$(printf '%s' "$existing" | jq --argjson m "$managed" '
+  # a = managed, b = live
+  def dm(a; b):
+    if (a|type) == "object" and (b|type) == "object" then
+      reduce ((b|keys_unsorted) + ((a|keys_unsorted) - (b|keys_unsorted)))[] as $k ({};
+        .[$k] = (if (a|has($k)) and (b|has($k)) then dm(a[$k]; b[$k])
+                 elif (b|has($k)) then b[$k]
+                 else a[$k] end))
+    elif (a|type) == "array" and (b|type) == "array" then
+      if ((a + b)|length > 0) and ((a + b)|all(type == "object" and has("hooks"))) then
+        [b[] | .hooks[]?.command] as $bc
+        | b + [a[]
+               | .hooks = [.hooks[] | select(.command as $c | $bc | any(. == $c) | not)]
+               | select(.hooks|length > 0)]
+      else
+        b + (a - b)
+      end
+    else a end;
+  . as $live
+  | dm($m; $live)
+  | .enabledPlugins = (($m.enabledPlugins // {}) + ($live.enabledPlugins // {}))
+')
+printf '%s' "$merged"
