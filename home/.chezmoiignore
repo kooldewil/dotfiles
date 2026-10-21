@@ -40,6 +40,7 @@ README.md
 .config/path-management.sh
 .config/leaderkey
 .config/macrowhisper
+.hammerspoon
 Library
 {{ end }}
 

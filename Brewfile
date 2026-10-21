@@ -31,6 +31,7 @@ brew "ognistik/formulae/macrowhisper" # Keyboard macro triggered transcription
 cask "ghostty"                # GPU-accelerated terminal emulator
 cask "aerospace"              # Tiling window manager (i3-inspired)
 brew "borders"                # Window border highlights (used by aerospace)
+cask "hammerspoon"            # Lua automation (cursor-jump hotkey)
 
 # Fonts (for Powerlevel10k)
 cask "font-meslo-lg-nerd-font"
