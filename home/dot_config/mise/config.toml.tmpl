@@ -41,6 +41,15 @@ chezmoi = "latest"
 "aqua:alexpasmantier/television" = "latest"
 "aqua:biomejs/biome" = "latest"
 
+# dcg: Claude Code PreToolUse guard against destructive shell commands. Not in aqua-registry.
+# dcg owns its hook entry in ~/.claude/settings.json and points it at its own binary on each
+# hook call; one call after install moves it off the version an upgrade just pruned.
+{{- if ne .chezmoi.os "windows" }}
+"github:Dicklesworthstone/destructive_command_guard" = { version = "latest", postinstall = "printf '%s' '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"true\"},\"hook_event_name\":\"PreToolUse\"}' | dcg >/dev/null 2>&1 || true" }
+{{- else }}
+"github:Dicklesworthstone/destructive_command_guard" = "latest"
+{{- end }}
+
 # Cross-platform shell tools
 "aqua:junegunn/fzf" = "latest"
 "aqua:ajeetdsouza/zoxide" = "latest"
