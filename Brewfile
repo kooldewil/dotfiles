@@ -69,6 +69,7 @@ cask "dockdoor"           # Window previews on Dock hover
 # Notes & Knowledge
 cask "obsidian"           # Note-taking
 cask "evernote"           # Note-taking
+cask "feedflow"           # RSS reader (syncs with FreshRSS on the homeserver)
 
 # Browsers
 cask "arc"                # Arc browser
