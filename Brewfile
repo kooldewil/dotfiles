@@ -9,6 +9,7 @@
 tap "nikitabobko/tap"
 tap "ognistik/formulae"
 tap "mfkrause/tap"
+tap "FelixKratz/formulae"
 
 # Bootstrap — must be in brew so they're available before mise runs
 brew "mise"              # Runtime version manager — installs all CLI dev tools
@@ -30,7 +31,7 @@ brew "ognistik/formulae/macrowhisper" # Keyboard macro triggered transcription
 # Terminal & Window Management
 cask "ghostty"                # GPU-accelerated terminal emulator
 cask "aerospace"              # Tiling window manager (i3-inspired)
-brew "borders"                # Window border highlights (used by aerospace)
+brew "FelixKratz/formulae/borders" # Window border highlights (used by aerospace)
 cask "hammerspoon"            # Lua automation (cursor-jump hotkey)
 
 # Fonts (for Powerlevel10k)
@@ -50,6 +51,7 @@ cask "keyclu"             # Keyboard shortcut viewer
 cask "homerow"            # Keyboard shortcuts for every button on screen
 cask "airbuddy"           # AirPods companion
 cask "lunar"              # Display brightness control
+cask "rcmd"               # Right-Command app switcher
 
 # Utilities
 cask "altserver"          # AltStore server for iOS sideloading
@@ -90,7 +92,7 @@ cask "homebrew/cask/onedrive"
 # AI Tools
 cask "chatgpt"
 cask "claude"
-cask "ollama"
+cask "ollama-app"
 cask "t3-code"            # GUI for coding agents (Claude Code, Codex)
 
 # Media
@@ -127,7 +129,6 @@ mas "xSearch",                 id: 1579902068
 mas "Dynamic wallpaper",       id: 1582358382
 mas "Vinegar",                 id: 1591303229
 mas "Noir",                    id: 1592917505
-mas "rcmd",                    id: 1596283165
 mas "Baking Soda",             id: 1601151613
 mas "Velja",                   id: 1607635845
 mas "Kagi for Safari",         id: 1622835804
