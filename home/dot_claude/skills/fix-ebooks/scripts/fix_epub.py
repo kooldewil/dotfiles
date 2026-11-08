@@ -41,7 +41,15 @@ MOJIBAKE = [
     ('â\x80\xa6', '…'),
 ]
 
-SENTENCE_END_RE = re.compile(r'[.!?”’\']\s*$')
+# Terminal punctuation, optionally followed by closing quotes/brackets/emphasis
+# (e.g. `."`, `?”`, `!)`, `…*`). Trailing em-dashes/ellipses count as deliberate
+# breaks (interrupted or trailing-off dialogue), not line-wrap fragments.
+SENTENCE_END_RE = re.compile(r'(?:[.!?…:;—–~]|\.\.\.)["”’\')\]*_~]*\s*$|["”’\')\]*]\s*$')
+
+# Only treat a book as fragmented when this share of its paragraphs lack an
+# ending. Web novels and normal prose have a few legitimate open-ended lines
+# (headings, scene labels); PDF rips are typically well above this.
+FRAGMENT_RATIO = 0.25
 
 
 def detect_fingerprint(soups):
@@ -65,14 +73,14 @@ def detect_fingerprint(soups):
 
 def audit_issues(soups):
     issues = {}
+    total_paras = 0
+    frag = 0
     for soup in soups:
         paras = soup.find_all('p')
 
-        frag = sum(1 for p in paras
-                   if p.get_text().rstrip()
-                   and not SENTENCE_END_RE.search(p.get_text().rstrip()))
-        if frag:
-            issues['PDF/web line fragmentation'] = issues.get('PDF/web line fragmentation', 0) + frag
+        nonempty = [p.get_text().rstrip() for p in paras if p.get_text().strip()]
+        total_paras += len(nonempty)
+        frag += sum(1 for t in nonempty if not SENTENCE_END_RE.search(t))
 
         hyph = sum(1 for p in paras if p.get_text().rstrip().endswith('-'))
         if hyph:
@@ -112,6 +120,9 @@ def audit_issues(soups):
                     issues['Hardcoded CSS colors'] = True
                     break
 
+    if total_paras and frag / total_paras >= FRAGMENT_RATIO:
+        issues = {'PDF/web line fragmentation': frag, **issues}
+
     return list(issues.items())
 
 
@@ -127,6 +138,20 @@ def ends_sentence(text):
     return not t or bool(SENTENCE_END_RE.search(t))
 
 
+def _absorb_next(p, nxt, separator):
+    """Move nxt's children (keeping inline markup like <i>/<b>) onto the end of p."""
+    if separator:
+        p.append(NavigableString(separator))
+    for child in list(nxt.contents):
+        p.append(child.extract())
+    nxt.decompose()
+
+
+def _strip_trailing_hyphen(p):
+    last = p.find_all(string=True)[-1]
+    last.replace_with(NavigableString(str(last).rstrip()[:-1]))
+
+
 def merge_fragmented_paragraphs(soup):
     """Merge mid-sentence <p> lines back into proper paragraphs."""
     count = 0
@@ -138,24 +163,19 @@ def merge_fragmented_paragraphs(soup):
             s = p.get_text().rstrip()
             if not s:
                 continue
+            nxt = paras[i + 1]
+            if not nxt.get_text().strip():
+                continue
             if s.endswith('-'):
-                nxt = paras[i + 1]
-                merged = s[:-1] + nxt.get_text().lstrip()
-                p.clear()
-                p.append(NavigableString(merged))
-                nxt.decompose()
-                count += 1
-                changed = True
-                break
-            if not ends_sentence(s):
-                nxt = paras[i + 1]
-                merged = s + ' ' + nxt.get_text().lstrip()
-                p.clear()
-                p.append(NavigableString(merged))
-                nxt.decompose()
-                count += 1
-                changed = True
-                break
+                _strip_trailing_hyphen(p)
+                _absorb_next(p, nxt, '')
+            elif not ends_sentence(s):
+                _absorb_next(p, nxt, ' ')
+            else:
+                continue
+            count += 1
+            changed = True
+            break
     return count
 
 
@@ -322,7 +342,7 @@ def main():
             ]
             src = ', '.join(x for x in parts if x) or 'Unknown / clean'
 
-        print('\n══ EPUB Diagnosis ═' * 3 + '═' * 5)
+        print('\n══ EPUB Diagnosis ' + '═' * 34)
         print(f'  Source fingerprint : {src}')
         print(f'  HTML files found   : {len(html_files)}')
         if issues:
