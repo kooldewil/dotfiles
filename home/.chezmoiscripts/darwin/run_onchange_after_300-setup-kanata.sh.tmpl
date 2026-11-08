@@ -5,19 +5,29 @@
 # Setup Kanata with Karabiner VirtualHIDDevice driver on macOS
 # hash: {{ include "dot_config/kanata/kanata.kbd.tmpl" | sha256sum }}
 # home: {{ .chezmoi.homeDir }} (re-run if the home directory changes)
+# brew binary: {{ if stat "/opt/homebrew/bin/kanata" }}{{ output "readlink" "-f" "/opt/homebrew/bin/kanata" | trim }}{{ end }} (re-run after brew upgrade)
 #
 # This script:
-# 1. Installs Karabiner-DriverKit-VirtualHIDDevice (just the driver, not full Karabiner-Elements)
-# 2. Creates LaunchDaemons for the driver services
-# 3. Creates LaunchDaemon for Kanata
+# 1. Copies the Homebrew kanata binary to a stable path
+# 2. Installs Karabiner-DriverKit-VirtualHIDDevice (just the driver, not full Karabiner-Elements)
+# 3. Creates LaunchDaemons for the driver services
+# 4. Creates LaunchDaemon for Kanata
+#
+# Why a stable copy: macOS pins Input Monitoring and Accessibility to the
+# binary's real path and (for ad-hoc signed builds) its hash. Running the
+# Cellar binary meant every `brew upgrade` silently killed kanata. Now an
+# upgrade changes nothing until `chezmoi apply` syncs the copy and asks for
+# the permissions to be re-granted.
 #
 # Manual steps still required (macOS security):
 # - Approve System Extension in System Settings → Privacy & Security
+# - Grant Input Monitoring + Accessibility to the stable binary
 # - May require reboot after first install
 
 set -euo pipefail
 
-KANATA_BIN="/opt/homebrew/bin/kanata"
+KANATA_SRC="/opt/homebrew/bin/kanata"
+KANATA_BIN="/usr/local/bin/kanata"
 KANATA_CFG="{{ .chezmoi.homeDir }}/.config/kanata/kanata.kbd"
 KANATA_LOG="/tmp/kanata.log"
 
@@ -30,7 +40,7 @@ MANAGER_PLIST="$PLIST_DIR/com.chezmoi.karabiner-vhid-manager.plist"
 KANATA_PLIST="$PLIST_DIR/com.chezmoi.kanata.plist"
 
 # Check if kanata is installed
-if [[ ! -x "$KANATA_BIN" ]]; then
+if [[ ! -x "$KANATA_SRC" ]]; then
     echo "⚠️  Kanata not installed, skipping setup"
     echo "   Install with: brew install kanata"
     exit 0
@@ -55,7 +65,7 @@ is_service_running() {
 }
 
 NEEDS_DRIVER_INSTALL=false
-NEEDS_INPUT_MONITORING=false
+NEEDS_PERMISSIONS=false
 
 if [[ ! -f "$DRIVER_MANAGER" ]]; then
     NEEDS_DRIVER_INSTALL=true
@@ -63,8 +73,33 @@ fi
 
 # Check if kanata is running successfully
 if ! is_service_running "com.chezmoi.kanata"; then
-    NEEDS_INPUT_MONITORING=true
+    NEEDS_PERMISSIONS=true
 fi
+
+# Sync the stable copy from Homebrew; a new binary invalidates the old grants
+KANATA_SRC_REAL=$(readlink -f "$KANATA_SRC")
+if ! cmp -s "$KANATA_SRC_REAL" "$KANATA_BIN"; then
+    echo "   Copying $KANATA_SRC_REAL → $KANATA_BIN (sudo needed)..."
+    sudo mkdir -p "$(dirname "$KANATA_BIN")"
+    sudo install -m 755 -o root -g wheel "$KANATA_SRC_REAL" "$KANATA_BIN"
+    NEEDS_PERMISSIONS=true
+fi
+
+prompt_permissions() {
+    echo ""
+    echo "📋 Kanata needs Input Monitoring AND Accessibility for $KANATA_BIN"
+    echo "   If kanata is already listed, remove it and re-add it (a new binary"
+    echo "   invalidates the old grant even at the same path)."
+    echo "   In each pane: click '+', press Cmd+Shift+G, and paste: $KANATA_BIN"
+    echo ""
+    read -p "   Press Enter to open Input Monitoring..."
+    open "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
+    read -p "   Press Enter after you've added kanata, to open Accessibility..."
+    open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+    read -p "   Press Enter after you've added kanata..."
+    # KeepAlive retries on its own, but restart now so it picks up the grants
+    sudo launchctl kickstart -k system/com.chezmoi.kanata
+}
 
 # A loaded service can still be crash-looping on a stale plist (e.g. after a
 # home directory change), so only take the reload shortcut if the plist
@@ -79,6 +114,9 @@ plist_is_current() {
 if [[ "$NEEDS_DRIVER_INSTALL" == "false" ]] && is_service_running "com.chezmoi.kanata" && plist_is_current; then
     echo "   Config changed, reloading..."
     sudo launchctl kickstart -k system/com.chezmoi.kanata
+    if [[ "$NEEDS_PERMISSIONS" == "true" ]]; then
+        prompt_permissions
+    fi
     echo "✅ Kanata config reloaded"
     exit 0
 fi
@@ -244,21 +282,10 @@ create_plist "$KANATA_PLIST" \
 load_service "$KANATA_PLIST" "com.chezmoi.kanata"
 
 # =============================================================================
-# Step 3: Prompt for Input Monitoring permission (only on first setup)
+# Step 3: Prompt for permissions (first setup, or after the binary changed)
 # =============================================================================
-if [[ "$NEEDS_INPUT_MONITORING" == "true" ]]; then
-    echo ""
-    echo "📋 Kanata needs Input Monitoring permission to intercept keyboard input"
-    echo ""
-    read -p "   Press Enter to open System Settings → Input Monitoring..."
-    open "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
-    # Get the actual binary path (not the symlink)
-    KANATA_REAL_BIN=$(readlink -f "$KANATA_BIN" 2>/dev/null || realpath "$KANATA_BIN" 2>/dev/null || echo "$KANATA_BIN")
-    echo ""
-    echo "   Click '+', press Cmd+Shift+G, and paste:"
-    echo "   $KANATA_REAL_BIN"
-    echo ""
-    read -p "   Press Enter after you've added kanata to Input Monitoring..."
+if [[ "$NEEDS_PERMISSIONS" == "true" ]]; then
+    prompt_permissions
 fi
 
 echo ""
