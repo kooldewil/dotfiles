@@ -54,7 +54,7 @@ AdGuard is DNS for the whole network: a bad change takes every device offline, i
 |--------|----|-----|-------|
 | Work laptop (2 NICs) | see memory | see memory | Hostname, IPs and MACs are in `~/.claude/memory/projects.md` ("Work laptop on home network"), not here, because this file is in a public repo |
 | Shauns-M4-Mini | 192.168.50.247 | — | Tailnet `macmini` 100.64.0.2; hosts T3 Code (port 3773, Network access on) |
-| Shaunaks-MBP | 192.168.50.74 | — | Tailnet `macbook-pro` 100.64.0.4 (accepts subnet routes) |
+| Shaunaks-MBP | 192.168.50.96 (DHCP, was .74) | private (rotating) | Tailnet `macbook-pro` 100.64.0.4 (accepts subnet routes). Uses a private Wi-Fi MAC, so its IP can change; find it in the router client list by name |
 
 ## Authentication
 
@@ -268,7 +268,12 @@ Current state only. For when and why something changed, see `git log -p` on this
 
 ### Router
 - **ASUS RT-AX95Q** (ZenWiFi AX), firmware 3.0.0.4_388_24814-g4979b32 (up to date as of 2026-07-21).
-- **Double NAT behind the Optus modem**: the ASUS WAN is `192.168.0.141` on the Optus Sagemcom F@ST 5366 (`192.168.0.1`, NBN FTTP), which holds the public IP (dynamic, not CGNAT). The modem stays because it carries the landline (VoIP, Line1). Modem has DMZ → `192.168.0.141` and a DHCP reservation pinning the ASUS to that address, so inbound traffic reaches the ASUS; forward ports on the ASUS only. Don't touch the modem's Voice or WAN settings. Its Wi-Fi is on but unused.
+- **Double NAT behind the Optus modem**: the ASUS WAN is `192.168.0.141` on the Optus Sagemcom F@ST 5366 (`192.168.0.1`, NBN FTTP), which holds the public IP (dynamic, not CGNAT). The modem stays because it carries the landline (VoIP, Line1). Modem has DMZ → `192.168.0.141` and a DHCP reservation pinning the ASUS to that address, so inbound traffic reaches the ASUS; forward ports on the ASUS only. Don't touch the modem's Voice or WAN settings. Its Wi-Fi is **off** since 2026-11-10 (Wi-Fi → Basic → Enable Wireless Access; login in 1Password item `192.168.0.1`): on ch 36/80 MHz at −42 dBm it shared the mesh's 5 GHz channel block and pushed MacBook pings to the router to ~500 ms. If Wi-Fi gets laggy again, check it hasn't come back on (e.g. after an Optus firmware push or modem reset).
+- **Mesh**: two XT8 nodes, Hallway (main router) and Office (`192.168.50.143`, Ethernet backhaul, `re_path` 1). Smart Connect on, one SSID for all bands.
+  - **5 GHz-1** (`wl1`, client band) only allows **ch 36–48** on this model, and every 80 MHz option there is one block, so changing its channel can't avoid an interferer in that block. Both nodes currently sit on ch 44.
+  - **5 GHz-2** (`wl2`, ch 149–165) is the hidden dedicated wireless backhaul (SSID `<main SSID>_dwb`) on 149/80 (`wl2_closed=1`), so clients can't use it, although Office is wired (`amas_ethernet=3`). Freeing it for clients is pending as of 2026-11-10; check the Ethernet Backhaul Mode and "5 GHz-2 as backhaul" settings in the web UI first.
+  - Roaming: Apple devices stay on a node until about −70 dBm (iPhone) / −75 dBm (Mac), so the MacBook sticks to the far node. Roaming Assistant (Wireless → Professional, 5 GHz about −70 dBm) and 802.11r are candidate fixes, not yet applied.
+- Firmware 388_24854 is available (not installed as of 2026-11-10).
 - **DDNS**: ASUS DDNS (`*.asuscomm.com`, name in the router UI under WAN → DDNS) with `ddns_realip_x=1`, so it registers the real public IP despite the double NAT. HTTPS cert option left on Auto (Let's Encrypt there would claim port 80). Point custom names at it with a CNAME. `hs.tavind.com` is a CNAME to it (DNS for tavind.com is at Fastmail, Settings → Domains → Customize DNS; leave the mail records alone).
 - **Internet exposure**: only TCP 443 → CT 105 (Headscale). "Web Access from WAN" (`misc_http_x`) is **off** (it was on, admin on WAN port 8080, which the DMZ would have exposed). Keep it off; reach the router over the tailnet instead.
 
